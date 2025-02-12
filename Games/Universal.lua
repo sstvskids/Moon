@@ -1,5 +1,6 @@
 local GuiLibrary = shared.GuiLibrary
 local lplr = game:GetService("Players").LocalPlayer
+local RunService = game:GetService("RunService")
 
 local getSpeed = function(speedVal)
 	speedVal = speedVal - lplr.Character.Humanoid.WalkSpeed
@@ -87,5 +88,3 @@ LongjumpVelo = Longjump.CreateSlider({
 	Max = 50,
 	Step = 1
 })
-
-GuiLibrary:CreateNotification("Moon loaded in "..(tick() - start).." seconds!", 3)

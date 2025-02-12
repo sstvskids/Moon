@@ -24,4 +24,11 @@ if gameScript ~= "404: Not Found" then
 	loadstring(gameScript)()
 else
 	shared.GuiLibrary:CreateNotification("This game is not supported, loading universal.", 3)
+	
+	if shared.MoonDeveloper then
+		loadstring(betterReadfile("Moon/Games/Universal.lua"))()
+	else
+		loadstring(fetch("Universal"))()
+	end
+	
 end

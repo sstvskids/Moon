@@ -472,9 +472,11 @@ function GuiLibrary:CreateWindow(name)
 					ToggleFunctions:Toggle()
 				end)
 				
-				if Config.Toggles[tab.Name.."_"..tab2.Name].Enabled then
-					ToggleFunctions:Toggle()
-				end
+				pcall(function()
+					if Config.Toggles[tab.Name.."_"..tab2.Name].Enabled then
+						ToggleFunctions:Toggle()
+					end
+				end)
 				
 				return ToggleFunctions
 			end

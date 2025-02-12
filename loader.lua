@@ -10,7 +10,15 @@ local function fetch(placeid)
 	return game:HttpGet('https://raw.githubusercontent.com/ImDamc/Moon/refs/heads/main/Games/'..placeid..".lua", true)
 end
 
+local function betterReadfile(path)
+	return isfile(path) and readfile(path) or "404: Not Found"
+end
+
 local gameScript = fetch(game.PlaceId)
+
+if shared.MoonDeveloper then
+	gameScript = betterReadfile("Moon/Games/"..game.PlaceId..".lua")
+end
 
 if gameScript ~= "404: Not Found" then
 	loadstring(gameScript)()

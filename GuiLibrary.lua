@@ -52,9 +52,13 @@ if not isfolder("Moon") then
 	makefolder("Moon/Configs")
 end
 
+local canSave = true
+
 local configPath = "Moon/Configs/"..game.PlaceId..".json"
 
 local function saveconfig()
+	if not canSave then return end
+	
 	if isfile(configPath) then
 		delfile(configPath)
 	end
@@ -268,6 +272,8 @@ function GuiLibrary:CreateWindow(name)
 	ModuleFrame.BackgroundTransparency = 1
 	local ModuleFrameSorter = Instance.new("UIListLayout", ModuleFrame)
 	ModuleFrameSorter.SortOrder = Enum.SortOrder.LayoutOrder
+	
+	local Modules = {}
 	
 	GuiLibrary.Windows[name] = {
 		CreateModuleButton = function(tab)
@@ -677,10 +683,15 @@ function GuiLibrary:CreateWindow(name)
 				KeybindButton.Text = "  Keybind: "..Config.Buttons[tab.Name].Keybind
 			end
 			
+			table.insert(Modules, ButtonFunctions)
+			
 			return ButtonFunctions
 		end,
 		Toggle = function()
 			Top.Visible = not Top.Visible
+		end,
+		GetModules = function()
+			return Modules
 		end,
 	}
 	
@@ -748,6 +759,23 @@ CustomThemeColorRed = CustomTheme.CreateSlider({
 	Min = 0,
 	Max = 255,
 	Step = 1,
+})
+
+Uninject = GuiLibrary.Windows.Utility.CreateModuleButton({
+	Name = "Uninject",
+	Function = function(callback)
+		canSave = false
+		for i,v in pairs(GuiLibrary.Windows) do
+			for i2,v2 in pairs(v:GetModules()) do
+				if v2.Enabled then
+					v2:Toggle()
+				end
+			end
+		end
+		
+		ScreenGui:Destroy()
+		shared.GuiLibrary = nil
+	end,
 })
 
 CustomThemeColorGreen = CustomTheme.CreateSlider({

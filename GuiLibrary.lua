@@ -99,6 +99,7 @@ local ArrayListFrame = Instance.new("Frame", ScreenGui)
 ArrayListFrame.Size = UDim2.fromScale(0.2,0.7)
 ArrayListFrame.Position = UDim2.fromScale(0.7,0.2)
 ArrayListFrame.BackgroundTransparency = 1
+ArrayListFrame.Visible = false
 local ArrayListFrameSorter = Instance.new("UIListLayout", ArrayListFrame)
 ArrayListFrameSorter.HorizontalAlignment = Enum.HorizontalAlignment.Right
 ArrayListFrameSorter.SortOrder = Enum.SortOrder.LayoutOrder
@@ -117,11 +118,29 @@ local ArrayList = {
 		Item.BackgroundTransparency = 0.5
 		Item.BorderSizePixel = 0
 		Item.Font = Enum.Font.SourceSans
+		Item.ZIndex = 3
 
 		local size = getAccurateTextSize(name, 22)
 
 		Item.Size = UDim2.new(0.03, size, 0.048, 0)
 		Item.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+		
+		local Shadow = Item:Clone()
+		Shadow.Parent = Item
+		Shadow.TextColor3 = Color3.fromRGB(50,50,50)
+		Shadow.Size = UDim2.fromScale(1,1)
+		Shadow.Position = UDim2.fromScale(0.02,0.02)
+		Shadow.ZIndex = 2		
+		Shadow.BackgroundTransparency = 1
+		Shadow.Name = "Shadow"
+		Shadow.Visible = false
+		
+		local Line = Instance.new("Frame", Item)
+		Line.Name = "Line"
+		Line.Size = UDim2.new(0,3,1,0)
+		Line.BorderSizePixel = 0
+		Line.BackgroundColor3 = GuiLibrary.Theme
+		Line.Position = UDim2.fromScale(1,0)
 
 		ArrayItems[name] = Item
 
@@ -162,6 +181,19 @@ local ArrayList = {
 	end,
 }
 
+task.spawn(function()
+	repeat task.wait()
+		pcall(function()
+			for i,v in pairs(ArrayItems) do
+				v.BackgroundTransparency = ArrayBackground.Enabled and 0.4 or 1
+				v.Line.BackgroundTransparency = ArrayLine.Enabled and 0 or 1
+				v.Shadow.Visible = ArrayShadow.Enabled
+				v.TextColor3 = GuiLibrary.Theme
+				v.Line.BackgroundColor3 = GuiLibrary.Theme
+			end
+		end)
+	until false
+end)
 
 function GuiLibrary:CreateNotification(text, duration)
 	
@@ -669,5 +701,69 @@ GuiLibrary:CreateWindow("Combat")
 GuiLibrary:CreateWindow("Movement")
 GuiLibrary:CreateWindow("Render")
 GuiLibrary:CreateWindow("Utility")
+
+ArrayListModule = GuiLibrary.Windows.Render.CreateModuleButton({
+	Name = "ArrayList",
+	Function = function(callback)
+		ArrayListFrame.Visible = callback
+	end,
+})
+
+ArrayBackground = ArrayListModule.CreateToggle({
+	Name = "Background",
+	Function = function() end,
+})
+
+ArrayLine = ArrayListModule.CreateToggle({
+	Name = "Line",
+	Function = function() end,
+})
+
+ArrayShadow = ArrayListModule.CreateToggle({
+	Name = "Shadow",
+	Function = function() end,
+})
+
+CustomTheme = GuiLibrary.Windows.Render.CreateModuleButton({
+	Name = "CustomTheme",
+	Function = function(callback)
+		if callback then
+			task.spawn(function()
+				repeat
+					GuiLibrary.Theme = Color3.fromRGB(CustomThemeColorRed.Value,CustomThemeColorGreen.Value,CustomThemeColorBlue.Value)
+					task.wait()
+				until not CustomTheme.Enabled
+			end)
+		else
+			task.delay(0.1, function()
+				GuiLibrary.Theme = Color3.fromRGB(0, 200, 255)
+			end)
+		end
+	end,
+})
+
+CustomThemeColorRed = CustomTheme.CreateSlider({
+	Name = "Red",
+	Default = 0,
+	Min = 0,
+	Max = 255,
+	Step = 1,
+})
+
+CustomThemeColorGreen = CustomTheme.CreateSlider({
+	Name = "Green",
+	Default = 200,
+	Min = 0,
+	Max = 255,
+	Step = 1
+})
+
+CustomThemeColorBlue = CustomTheme.CreateSlider({
+	Name = "Blue",
+	Default = 255,
+	Min = 0,
+	Max = 255,
+	Step = 1
+})
 
 shared.GuiLibrary = GuiLibrary

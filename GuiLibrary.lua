@@ -357,6 +357,8 @@ function GuiLibrary:CreateWindow(name)
 			function ButtonFunctions:Toggle()
 				ButtonFunctions.Enabled = not ButtonFunctions.Enabled
 
+				task.spawn(tab.Function, ButtonFunctions.Enabled)
+
 				if ButtonFunctions.Enabled then
 					DuplicateButton = Button:Clone()
 					DuplicateButton.ImageLabel:Destroy()
@@ -398,8 +400,6 @@ function GuiLibrary:CreateWindow(name)
 				end
 
 				Config.Buttons[tab.Name].Enabled = ButtonFunctions.Enabled
-
-				tab.Function(ButtonFunctions.Enabled)
 
 				task.delay(0.1, saveconfig)
 			end

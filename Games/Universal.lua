@@ -162,6 +162,7 @@ GravityVal = Gravity.CreateSlider({
 	Step = 0.5
 })
 
+local toteleport = Vector3.zero
 Teleport = GuiLibrary.Windows.Movement.CreateModuleButton({
 	Name = "Teleport",
 	Function = function(callback)
@@ -170,6 +171,8 @@ Teleport = GuiLibrary.Windows.Movement.CreateModuleButton({
 				local posToTP = lplr:GetMouse().Hit + Vector3.new(0,5,0)
 
 				lplr.Character.PrimaryPart.CFrame = CFrame.new(posToTP)
+			elseif TeleportMode.Option == "Vec3" then
+				lplr.Character.PrimaryPart.CFrame = CFrame.new(toteleport)
 			end
 		end
 	end
@@ -177,4 +180,48 @@ Teleport = GuiLibrary.Windows.Movement.CreateModuleButton({
 TeleportMode = Teleport.CreatePicker({
 	Name = "Mode",
 	Options = {"MousePos", "Vec3"}
+})
+TeleportX = Teleport.CreateSlider({
+	Name = "X", Default = 0, Min = -500, Max = 500, Step = 5,
+	Function = function(value)
+		toteleport = Vector3.new(value, toteleport.Y, toteleport.Z)
+	end,
+})
+TeleportY = Teleport.CreateSlider({
+	Name = "Y", Default = 0, Min = -500, Max = 500, Step = 5,
+	Function = function(value)
+		toteleport = Vector3.new(toteleport.X, value, toteleport.Z)
+	end,
+})
+TeleportZ = Teleport.CreateSlider({
+	Name = "Z", Default = 0, Min = -500, Max = 500, Step = 5,
+	Function = function(value)
+		toteleport = Vector3.new(toteleport.X, toteleport.Y, value)
+	end,
+})
+
+Highjump = GuiLibrary.Windows.Movement.CreateModuleButton({
+	Name = "Highjump",
+	Function = function(callback)
+		if callback then
+			repeat
+				lplr.Character.PrimaryPart.Velocity += Vector3.new(lplr.Character.PrimaryPart.Velocity.X, HighjumpVal.Value, lplr.Character.PrimaryPart.Velocity.Z)
+				task.wait()
+			until not Highjump.Enabled
+		else
+			if HighjumpFS.Enabled then
+				lplr.Character.PrimaryPart.Velocity = Vector3.new(lplr.Character.PrimaryPart.Velocity.X, 10, lplr.Character.PrimaryPart.Velocity.Z)
+			end
+		end
+	end,
+})
+HighjumpFS = Highjump.CreateToggle({
+	Name = "Fast Stop",
+})
+HighjumpVal = Highjump.CreateSlider({
+	Name = "Value",
+	Default = 0,
+	Min = 0,
+	Max = 25,
+	Step = 0.5
 })

@@ -1,4 +1,4 @@
-Moon Script, the #1 roblox script utility.
+# Moon Script, the #1 roblox script utility.
 
 We offer:
 

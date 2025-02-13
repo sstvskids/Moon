@@ -58,11 +58,11 @@ local configPath = "Moon/Configs/"..game.PlaceId..".json"
 
 local function saveconfig()
 	if not canSave then return end
-	
+
 	if isfile(configPath) then
 		delfile(configPath)
 	end
-	
+
 	writefile(configPath, HttpService:JSONEncode(Config))
 end
 
@@ -128,7 +128,7 @@ local ArrayList = {
 
 		Item.Size = UDim2.new(0.03, size, 0.048, 0)
 		Item.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-		
+
 		local Shadow = Item:Clone()
 		Shadow.Parent = Item
 		Shadow.TextColor3 = Color3.fromRGB(50,50,50)
@@ -138,7 +138,7 @@ local ArrayList = {
 		Shadow.BackgroundTransparency = 1
 		Shadow.Name = "Shadow"
 		Shadow.Visible = false
-		
+
 		local Line = Instance.new("Frame", Item)
 		Line.Name = "Line"
 		Line.Size = UDim2.new(0,3,1,0)
@@ -200,7 +200,7 @@ task.spawn(function()
 end)
 
 function GuiLibrary:CreateNotification(text, duration)
-	
+
 	local Notification = Instance.new("TextLabel", NotificationFrame)
 	Notification.BorderSizePixel = 0
 	Notification.BackgroundColor3 = Color3.fromRGB(40,40,40)
@@ -209,33 +209,33 @@ function GuiLibrary:CreateNotification(text, duration)
 	Notification.TextSize = 22
 	Notification.TextXAlignment = Enum.TextXAlignment.Left
 	Notification.Font = Enum.Font.SourceSans
-	
+
 	local size = getAccurateTextSize("  "..text, 22)
-	
+
 	Notification.Size = UDim2.new(0.05,size,0.055,0)
-	
+
 	local NotificationDuration = Instance.new("Frame", Notification)
 	NotificationDuration.Size = UDim2.fromScale(1, 0.05)
 	NotificationDuration.BorderSizePixel = 0
 	NotificationDuration.BackgroundColor3 = GuiLibrary.Theme
 	NotificationDuration.Position = UDim2.fromScale(0,0.95)
-	
+
 	TweenService:Create(NotificationDuration, TweenInfo.new(duration + 0.3), {
 		Size = UDim2.fromScale(0, 0.05)
 	}):Play()
-	
+
 	task.delay(duration, function()
 		TweenService:Create(Notification, TweenInfo.new(0.3), {
 			Size = UDim2.fromScale(0, 0.055)
 		}):Play()
-		
+
 		Debris:AddItem(Notification, 0.35)
 	end)
 end
 
 local WindowCount = 0
 function GuiLibrary:CreateWindow(name)
-	
+
 	local Top = Instance.new("TextLabel", ScreenGui)
 	Top.Size = UDim2.fromScale(0.1, 0.04)
 	Top.Position = UDim2.fromScale(0.15 + (0.12 * WindowCount), 0.15)
@@ -245,13 +245,13 @@ function GuiLibrary:CreateWindow(name)
 	Top.TextColor3 = Color3.fromRGB(255,255,255)
 	Top.TextSize = 12
 	Top.TextXAlignment = Enum.TextXAlignment.Left
-	
+
 	local TopLine = Instance.new("Frame", Top)
 	TopLine.Size = UDim2.fromScale(1,0.05)
 	TopLine.Position = UDim2.fromScale(0,0.95)
 	TopLine.BorderSizePixel = 0
 	TopLine.BackgroundColor3 = GuiLibrary.Theme
-	
+
 	local TopLineSoftGlow = Instance.new("ImageLabel", Top)
 	TopLineSoftGlow.BackgroundTransparency = 1
 	TopLineSoftGlow.Image = Assets.Glow
@@ -260,28 +260,28 @@ function GuiLibrary:CreateWindow(name)
 	TopLineSoftGlow.ImageColor3 = GuiLibrary.Theme
 	TopLineSoftGlow.ImageTransparency = 0.8
 	TopLineSoftGlow.Position = UDim2.fromScale(-0.3,0.725)
-	
+
 	GuiLibrary.ThemeUpdate.Event:Connect(function(newTheme)
 		TopLine.BackgroundColor3 = newTheme
 		TopLineSoftGlow.ImageColor3 = newTheme
 	end)
-	
+
 	local ModuleFrame = Instance.new("ScrollingFrame", Top)
 	ModuleFrame.Position = UDim2.fromScale(0,1)
 	ModuleFrame.Size = UDim2.fromScale(1,15)
 	ModuleFrame.BackgroundTransparency = 1
 	local ModuleFrameSorter = Instance.new("UIListLayout", ModuleFrame)
 	ModuleFrameSorter.SortOrder = Enum.SortOrder.LayoutOrder
-	
+
 	local Modules = {}
-	
+
 	GuiLibrary.Windows[name] = {
 		CreateModuleButton = function(tab)
-			
+
 			if Config.Buttons[tab.Name] == nil then
 				Config.Buttons[tab.Name] = {Enabled = false, Keybind = "Unknown"}
 			end
-			
+
 			local Button = Instance.new("TextButton", ModuleFrame)
 			Button.Size = UDim2.fromScale(1,0.07)
 			Button.BorderSizePixel = 0
@@ -292,21 +292,21 @@ function GuiLibrary:CreateWindow(name)
 			Button.TextXAlignment = Enum.TextXAlignment.Left
 			Button.LayoutOrder = #ModuleFrame:GetChildren()
 			Button.BorderSizePixel = 0
-			
+
 			local SettingsLogo = Instance.new("ImageLabel", Button)
 			SettingsLogo.BackgroundTransparency = 1
 			SettingsLogo.Image = Assets.Settings
 			SettingsLogo.Size = UDim2.fromScale(0.16,0.8)
 			SettingsLogo.Position = UDim2.fromScale(0.84,0.12)
 			SettingsLogo.ZIndex = 4
-			
+
 			local SettingsFrame = Instance.new("Frame", ModuleFrame)
 			SettingsFrame.Size = UDim2.fromScale(1,0)
 			SettingsFrame.AutomaticSize = Enum.AutomaticSize.Y
 			SettingsFrame.LayoutOrder = Button.LayoutOrder + 1
 			SettingsFrame.Visible = false
 			SettingsFrame.BackgroundTransparency = 1
-			
+
 			local KeybindButton = Instance.new("TextButton", SettingsFrame)
 			KeybindButton.Size = UDim2.new(1, 0, 0, 30)
 			KeybindButton.BorderSizePixel = 0
@@ -316,7 +316,7 @@ function GuiLibrary:CreateWindow(name)
 			KeybindButton.Text = "  Keybind: NONE"
 			KeybindButton.TextXAlignment = Enum.TextXAlignment.Left
 			KeybindButton.LayoutOrder = 1
-			
+
 			local KeybindConnection
 			local Keybind = Enum.KeyCode.Unknown
 			KeybindButton.MouseButton1Down:Connect(function()
@@ -329,34 +329,34 @@ function GuiLibrary:CreateWindow(name)
 					end
 					task.wait()
 					Keybind = key.KeyCode
-					
+
 					KeybindButton.Text = "  Keybind: "..tostring(Keybind):split(".")[3]:upper()
-					
+
 					Config.Buttons[tab.Name].Keybind = tostring(Keybind):split(".")[3]:upper()
 					task.delay(0.1, saveconfig)
 				end)
 			end)
-			
+
 			local KeybindSideLine = Instance.new("Frame", KeybindButton)
 			KeybindSideLine.Size = UDim2.fromScale(0.015,1)
 			KeybindSideLine.Position = UDim2.fromScale(0,0)
 			KeybindSideLine.BorderSizePixel = 0
 			KeybindSideLine.BackgroundColor3 = GuiLibrary.Theme
-			
+
 			local SettingsFrameSorter = Instance.new("UIListLayout", SettingsFrame)
 			SettingsFrameSorter.SortOrder = Enum.SortOrder.LayoutOrder
 			SettingsFrameSorter.FillDirection = Enum.FillDirection.Vertical
 			SettingsFrameSorter.VerticalAlignment = Enum.VerticalAlignment.Bottom
-			
+
 			local ButtonFunctions = {Enabled = false}
 			local DuplicateButton
 			local DuplicateConnection
 			local DuplicateColorConnection
 			local DuplicateB2Connection
-			
+
 			function ButtonFunctions:Toggle()
 				ButtonFunctions.Enabled = not ButtonFunctions.Enabled
-				
+
 				if ButtonFunctions.Enabled then
 					DuplicateButton = Button:Clone()
 					DuplicateButton.ImageLabel:Destroy()
@@ -367,7 +367,7 @@ function GuiLibrary:CreateWindow(name)
 					TweenService:Create(DuplicateButton, TweenInfo.new(0.3), {
 						Size = UDim2.fromScale(1,1)
 					}):Play()
-					
+
 					DuplicateConnection = DuplicateButton.MouseButton1Down:Connect(function()
 						ButtonFunctions:Toggle()
 					end)
@@ -384,7 +384,7 @@ function GuiLibrary:CreateWindow(name)
 					TweenService:Create(DuplicateButton, TweenInfo.new(0.3), {
 						Size = UDim2.fromScale(0,1)
 					}):Play()
-					
+
 					task.delay(0.3, function()
 						DuplicateButton:Destroy()
 						pcall(function()
@@ -393,100 +393,106 @@ function GuiLibrary:CreateWindow(name)
 							DuplicateB2Connection:Disconnect()
 						end)
 					end)
-					
+
 					GuiLibrary:CreateNotification("Module ".. tab.Name .." has been Disabled!", 1)
 				end
-				
+
 				Config.Buttons[tab.Name].Enabled = ButtonFunctions.Enabled
-				
+
 				tab.Function(ButtonFunctions.Enabled)
-				
+
 				task.delay(0.1, saveconfig)
 			end
-			
+
 			function ButtonFunctions.CreateToggle(tab2)
-				
-				if Config.Toggles[tab.Name.."_"..tab2.Name] == nil then
-					Config.Toggles[tab.Name.."_"..tab2.Name] = {Enabled = false}
+				local toggleKey = tab.Name.."_"..tab2.Name
+
+				if type(Config.Toggles[toggleKey]) ~= "table" then
+					Config.Toggles[toggleKey] = {Enabled = false}
+				elseif Config.Toggles[toggleKey].Enabled == nil then
+					Config.Toggles[toggleKey].Enabled = false
 				end
-				
+
 				local Toggle = Instance.new("TextButton", SettingsFrame)
 				Toggle.Size = UDim2.new(1, 0, 0, 30)
 				Toggle.BorderSizePixel = 0
-				Toggle.BackgroundColor3 = Color3.fromRGB(45,45,45)
-				Toggle.TextColor3 = Color3.fromRGB(255,255,255)
+				Toggle.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+				Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
 				Toggle.TextSize = 10
-				Toggle.Text = "  "..tab2.Name
+				Toggle.Text = "  " .. tab2.Name
 				Toggle.TextXAlignment = Enum.TextXAlignment.Left
-				
+
 				local SettingsSideLine = Instance.new("Frame", Toggle)
-				SettingsSideLine.Size = UDim2.fromScale(0.015,1)
-				SettingsSideLine.Position = UDim2.fromScale(0,0)
+				SettingsSideLine.Size = UDim2.fromScale(0.015, 1)
+				SettingsSideLine.Position = UDim2.fromScale(0, 0)
 				SettingsSideLine.BorderSizePixel = 0
 				SettingsSideLine.BackgroundColor3 = GuiLibrary.Theme
-				
+
 				local ToggleFunctions = {Enabled = false}
-				
+
 				local FakeToggleText = Toggle:Clone()
 				FakeToggleText.Frame:Destroy()
 				FakeToggleText.Visible = false
 				FakeToggleText.BackgroundTransparency = 1
 				FakeToggleText.ZIndex = 6
 				FakeToggleText.Parent = Toggle
-				FakeToggleText.Size = UDim2.fromScale(1,1)
-				
+				FakeToggleText.Size = UDim2.fromScale(1, 1)
+
 				GuiLibrary.ThemeUpdate.Event:Connect(function(newTheme)
 					SettingsSideLine.BackgroundColor3 = newTheme
 				end)
-				
+
 				function ToggleFunctions:Toggle()
 					ToggleFunctions.Enabled = not ToggleFunctions.Enabled
-					
+
 					if tab2.Function then
-						tab2.Function(ToggleFunctions.Enabled)
+						task.spawn(tab2.Function, ToggleFunctions.Enabled)
 					end
 
 					if ToggleFunctions.Enabled then
 						TweenService:Create(SettingsSideLine, TweenInfo.new(0.3), {
-							Size = UDim2.fromScale(1,1)
+							Size = UDim2.fromScale(1, 1)
 						}):Play()
 						FakeToggleText.Visible = true
 					else
 						TweenService:Create(SettingsSideLine, TweenInfo.new(0.3), {
-							Size = UDim2.fromScale(0.015,1)
+							Size = UDim2.fromScale(0.015, 1)
 						}):Play()
 						task.delay(0.3, function()
 							FakeToggleText.Visible = false
 						end)
 					end
-					
-					Config.Toggles[tab.Name.."_"..tab2.Name] = ToggleFunctions.Enabled
+
+					if type(Config.Toggles[toggleKey]) ~= "table" then
+						Config.Toggles[toggleKey] = {}
+					end
+					Config.Toggles[toggleKey].Enabled = ToggleFunctions.Enabled
+
 					task.delay(0.1, saveconfig)
 				end
-				
+
 				Toggle.MouseButton1Down:Connect(function()
 					ToggleFunctions:Toggle()
 				end)
-				
+
 				FakeToggleText.MouseButton1Down:Connect(function()
 					ToggleFunctions:Toggle()
 				end)
-				
-				pcall(function()
-					if Config.Toggles[tab.Name.."_"..tab2.Name].Enabled then
-						ToggleFunctions:Toggle()
-					end
-				end)
-				
+
+				if Config.Toggles[toggleKey].Enabled then
+					ToggleFunctions:Toggle()
+				end
+
 				return ToggleFunctions
 			end
-			
+
+
 			function ButtonFunctions.CreatePicker(tab2)
-				
+
 				if Config.Pickers[tab.Name.."_"..tab2.Name] == nil then
 					Config.Pickers[tab.Name.."_"..tab2.Name] = {Option = tab2.Options[1]}
 				end
-				
+
 				local Picker = Instance.new("TextButton", SettingsFrame)
 				Picker.Size = UDim2.new(1, 0, 0, 30)
 				Picker.BorderSizePixel = 0
@@ -541,18 +547,18 @@ function GuiLibrary:CreateWindow(name)
 
 				return PickerFunctions
 			end
-			
+
 			function ButtonFunctions.CreateSlider(tab2)
-				
+
 				if Config.Sliders[tab.Name.."_"..tab2.Name] == nil then
 					Config.Sliders[tab.Name.."_"..tab2.Name] = {Value = tab2.Default}
 				end
-				
+
 				local SliderFrame = Instance.new("Frame", SettingsFrame)
 				SliderFrame.Size = UDim2.new(1, 0, 0, 40)
 				SliderFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 				SliderFrame.BorderSizePixel = 0
-				
+
 				local SettingsSideLine = Instance.new("Frame", SliderFrame)
 				SettingsSideLine.Size = UDim2.fromScale(0.015,1)
 				SettingsSideLine.Position = UDim2.fromScale(0,0)
@@ -603,19 +609,19 @@ function GuiLibrary:CreateWindow(name)
 					SliderFill.Size = UDim2.new(relativeX, 0, 1, 0)
 					--SliderButton.Position = UDim2.new(relativeX, -7, 0, 0)
 					SliderName.Text = tab2.Name .. " (" .. value .. ")"
-					
+
 					TweenService:Create(SliderButton, TweenInfo.new(0.1), {Position = UDim2.new(relativeX, -7, 0, 0)}):Play()
 
 					if tab2.Function then
 						tab2.Function(value)
 					end
-					
+
 					task.delay(0.1,saveconfig)
-					
+
 					return value
 				end
-				
-				
+
+
 				function SliderFunctions.Input(input)
 					if input.UserInputType == Enum.UserInputType.MouseButton1 then
 						local moveConnection, releaseConnection
@@ -639,7 +645,7 @@ function GuiLibrary:CreateWindow(name)
 						end)
 					end
 				end
-				
+
 				function SliderFunctions.SetValue(value)
 					SliderFunctions.Value = value
 					Config.Sliders[tab.Name.."_"..tab2.Name].Value = value
@@ -651,9 +657,9 @@ function GuiLibrary:CreateWindow(name)
 					end
 					task.delay(0.1,saveconfig)
 				end
-				
+
 				SliderFunctions.SetValue(Config.Sliders[tab.Name.."_"..tab2.Name].Value)
-				
+
 				--SliderFill.Size = UDim2.new(0, 0, 1, 0)
 
 				SliderButton.InputBegan:Connect(SliderFunctions.Input)
@@ -666,27 +672,29 @@ function GuiLibrary:CreateWindow(name)
 			Button.MouseButton1Down:Connect(function()
 				ButtonFunctions:Toggle()
 			end)
-			
+
 			Button.MouseButton2Down:Connect(function()
 				SettingsFrame.Visible = not SettingsFrame.Visible
 			end)
-			
+
 			UserInputService.InputBegan:Connect(function(key, gpe)
 				if gpe or key.KeyCode ~= Keybind or Keybind == Enum.KeyCode.Unknown then return end
 				ButtonFunctions:Toggle()
 			end)
-			
+
 			if Config.Buttons[tab.Name].Enabled then
-				ButtonFunctions:Toggle()
+				task.delay(0.5, function()
+					ButtonFunctions:Toggle()
+				end)
 			end
-			
+
 			Keybind = Enum.KeyCode[Config.Buttons[tab.Name].Keybind]
 			if Keybind ~= Enum.KeyCode.Unknown then
 				KeybindButton.Text = "  Keybind: "..Config.Buttons[tab.Name].Keybind
 			end
-			
+
 			table.insert(Modules, ButtonFunctions)
-			
+
 			return ButtonFunctions
 		end,
 		Toggle = function()
@@ -696,7 +704,7 @@ function GuiLibrary:CreateWindow(name)
 			return Modules
 		end,
 	}
-	
+
 	WindowCount += 1
 end
 
@@ -704,7 +712,7 @@ UserInputService.InputBegan:Connect(function(key, gpe)
 	if gpe or key.KeyCode ~= Enum.KeyCode.RightShift then
 		return
 	end
-	
+
 	for i,v in pairs(GuiLibrary.Windows) do
 		v:Toggle()
 	end
@@ -715,10 +723,26 @@ GuiLibrary:CreateWindow("Movement")
 GuiLibrary:CreateWindow("Render")
 GuiLibrary:CreateWindow("Utility")
 
+local origArraySize = ArrayListFrame.Size
 ArrayListModule = GuiLibrary.Windows.Render.CreateModuleButton({
 	Name = "ArrayList",
 	Function = function(callback)
 		ArrayListFrame.Visible = callback
+
+		task.spawn(function()
+			repeat
+
+				local suc, ret = pcall(function()
+					return ArrayScale.Value / 100
+				end)
+
+				if suc then
+					ArrayListFrame.Size = UDim2.fromScale(origArraySize.X.Scale * ret, origArraySize.Y.Scale * ret)
+				end
+
+				task.wait()
+			until not ArrayListModule.Enabled
+		end)
 	end,
 })
 
@@ -737,13 +761,30 @@ ArrayShadow = ArrayListModule.CreateToggle({
 	Function = function() end,
 })
 
+ArrayScale = ArrayListModule.CreateSlider({
+	Name = "Scale",
+	Default = 100,
+	Min = 0,
+	Max = 100,
+	Step = 1,
+})
+
 CustomTheme = GuiLibrary.Windows.Render.CreateModuleButton({
 	Name = "CustomTheme",
 	Function = function(callback)
 		if callback then
 			task.spawn(function()
+				local last = GuiLibrary.Theme
 				repeat
-					GuiLibrary.Theme = Color3.fromRGB(CustomThemeColorRed.Value,CustomThemeColorGreen.Value,CustomThemeColorBlue.Value)
+					pcall(function()
+						GuiLibrary.Theme = Color3.fromRGB(CustomThemeColorRed.Value,CustomThemeColorGreen.Value,CustomThemeColorBlue.Value)
+
+						if GuiLibrary.Theme ~= last then
+							GuiLibrary.ThemeUpdate:Fire(GuiLibrary.Theme)
+						end
+
+						last = GuiLibrary.Theme
+					end)
 					task.wait()
 				until not CustomTheme.Enabled
 			end)
@@ -763,23 +804,6 @@ CustomThemeColorRed = CustomTheme.CreateSlider({
 	Step = 1,
 })
 
-Uninject = GuiLibrary.Windows.Utility.CreateModuleButton({
-	Name = "Uninject",
-	Function = function(callback)
-		canSave = false
-		for i,v in pairs(GuiLibrary.Windows) do
-			for i2,v2 in pairs(v:GetModules()) do
-				if v2.Enabled then
-					v2:Toggle()
-				end
-			end
-		end
-		
-		ScreenGui:Destroy()
-		shared.GuiLibrary = nil
-	end,
-})
-
 CustomThemeColorGreen = CustomTheme.CreateSlider({
 	Name = "Green",
 	Default = 200,
@@ -794,6 +818,24 @@ CustomThemeColorBlue = CustomTheme.CreateSlider({
 	Min = 0,
 	Max = 255,
 	Step = 1
+})
+
+Uninject = GuiLibrary.Windows.Utility.CreateModuleButton({
+	Name = "Uninject",
+	Function = function(callback)
+		canSave = false
+		task.wait(0.5)
+		for i,v in pairs(GuiLibrary.Windows) do
+			for i2,v2 in pairs(v:GetModules()) do
+				if v2.Enabled then
+					v2:Toggle()
+				end
+			end
+		end
+
+		ScreenGui:Destroy()
+		shared.GuiLibrary = nil
+	end,
 })
 
 shared.GuiLibrary = GuiLibrary

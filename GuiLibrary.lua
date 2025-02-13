@@ -533,7 +533,7 @@ function GuiLibrary:CreateWindow(name)
 					PickerFunctions.Option = tab2.Options[index]
 					Picker.Text = "  "..tab2.Name..": "..tab2.Options[index]
 					if tab2.Function then
-						tab2.Function(PickerFunctions.Option)
+						task.spawn(tab2.Function, PickerFunctions.Option)
 					end
 					Config.Pickers[tab.Name.."_"..tab2.Name] = PickerFunctions.Option
 					task.delay(0.1, saveconfig)
@@ -613,7 +613,7 @@ function GuiLibrary:CreateWindow(name)
 					TweenService:Create(SliderButton, TweenInfo.new(0.1), {Position = UDim2.new(relativeX, -7, 0, 0)}):Play()
 
 					if tab2.Function then
-						tab2.Function(value)
+						task.spawn(tab2.Function, value)
 					end
 
 					task.delay(0.1,saveconfig)
@@ -653,7 +653,7 @@ function GuiLibrary:CreateWindow(name)
 					SliderName.Text = tab2.Name .. " (" .. value .. ")"
 					TweenService:Create(SliderButton, TweenInfo.new(0.1), {Position = UDim2.new((value - tab2.Min) / (tab2.Max - tab2.Min), -7, 0, 0)}):Play()
 					if tab2.Function then
-						tab2.Function(value)
+						task.spawn(tab2.Function, value)
 					end
 					task.delay(0.1,saveconfig)
 				end

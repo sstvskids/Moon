@@ -14,6 +14,10 @@ local GuiLibrary = {
 	Windows = {}
 }
 
+local function darkenColor(clr, value)
+	return Color3.fromRGB((clr.R * value) * 255,(clr.G * value) * 255,(clr.B * value) * 255)
+end
+
 local isfile = isfile or function(...)
 	return false
 end
@@ -112,6 +116,113 @@ local function getAccurateTextSize(text, size)
 	return TextService:GetTextSize(text, size, Enum.Font.SourceSans, Vector2.zero).X
 end
 
+local TargetHud = {}
+
+local HudFrame = Instance.new("Frame", ScreenGui)
+HudFrame.Size = UDim2.fromScale(0.14, 0.07)
+HudFrame.Position = UDim2.fromScale(0.6, 0.4)
+HudFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+HudFrame.BackgroundTransparency = 0.5
+HudFrame.BorderSizePixel = 0
+HudFrame.Visible = false
+
+local HudCorner = Instance.new("UICorner", HudFrame)
+HudCorner.CornerRadius = UDim.new(0, 6)
+
+local ProfileBack = Instance.new("Frame", HudFrame)
+ProfileBack.Size = UDim2.fromScale(0.22, 0.9)
+ProfileBack.Position = UDim2.fromScale(0.02, 0.05)
+ProfileBack.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+ProfileBack.BackgroundTransparency = 0.4
+ProfileBack.BorderSizePixel = 0
+
+local ProfileBackCorner = Instance.new("UICorner", ProfileBack)
+ProfileBackCorner.CornerRadius = UDim.new(1, 0)
+
+local ProfilePic = Instance.new("ImageLabel", ProfileBack)
+ProfilePic.Size = UDim2.fromScale(1, 1)
+ProfilePic.Position = UDim2.fromScale(0, 0)
+ProfilePic.BackgroundTransparency = 1
+ProfilePic.Image = ""
+ProfilePic.Name = "ProfilePic"
+
+local NameLabel = Instance.new("TextLabel", HudFrame)
+NameLabel.Size = UDim2.fromScale(0.7, 0.4)
+NameLabel.Position = UDim2.fromScale(0.28, 0.1)
+NameLabel.BackgroundTransparency = 1
+NameLabel.TextScaled = true
+NameLabel.Font = Enum.Font.GothamBold
+NameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+NameLabel.Text = ""
+NameLabel.TextXAlignment = Enum.TextXAlignment.Left
+NameLabel.Name = "NameLabel"
+
+local HealthBack = Instance.new("Frame", HudFrame)
+HealthBack.Size = UDim2.fromScale(0.7, 0.2)
+HealthBack.Position = UDim2.fromScale(0.28, 0.65)
+HealthBack.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+HealthBack.BorderSizePixel = 0
+
+local HealthBackCorner = Instance.new("UICorner", HealthBack)
+HealthBackCorner.CornerRadius = UDim.new(1, 0)
+
+local HealthBar = Instance.new("Frame", HealthBack)
+HealthBar.Size = UDim2.fromScale(1, 1)
+HealthBar.Position = UDim2.fromScale(0, 0)
+HealthBar.BackgroundColor3 = Color3.fromRGB(50, 205, 50)
+HealthBar.BorderSizePixel = 0
+HealthBar.Name = "HealthBar"
+
+GuiLibrary.ThemeUpdate.Event:Connect(function(newTheme)
+	HealthBar.BackgroundColor3 = newTheme
+end)
+
+local HealthCorner = Instance.new("UICorner", HealthBar)
+HealthCorner.CornerRadius = UDim.new(1, 0)
+
+HealthBar.Parent = HealthBack
+ProfileBack.Parent = HudFrame
+
+local TargetHudEvent
+
+function TargetHud.SetTarget(player)
+    task.spawn(function()
+        if player and player.Character and player.Character:FindFirstChild("Humanoid") then
+            HudFrame.Visible = true
+            NameLabel.Text = player.Name
+            ProfilePic.Image = "http://www.roblox.com/Thumbs/Avatar.ashx?x=100&y=100&Format=Png&username=" .. player.Name
+
+            local humanoid = player.Character:FindFirstChild("Humanoid")
+            if humanoid then
+				local healthPercentage = humanoid.Health / humanoid.MaxHealth
+                TargetHudEvent = humanoid:GetPropertyChangedSignal("Health"):Connect(function()
+					task.spawn(function()
+						healthPercentage = humanoid.Health / humanoid.MaxHealth
+						TweenService:Create(HealthBar, TweenInfo.new(0.3), {
+							Size = UDim2.fromScale(healthPercentage, 1)
+						}):Play()
+
+						HealthBar.BackgroundColor3 = GuiLibrary.Theme
+					end)
+				end)
+                HealthBar.Size = UDim2.fromScale(healthPercentage, 1)
+            end
+        end
+    end)
+end
+
+function TargetHud.Clear()
+	task.spawn(function()
+		HudFrame.Visible = false
+
+		pcall(function()
+			TargetHudEvent:Disconnect()
+		end)
+	end)
+end
+
+GuiLibrary.TargetHud = TargetHud
+
 local ArrayItems = {}
 local ArrayList = {
 	Create = function(name)
@@ -188,13 +299,37 @@ local ArrayList = {
 task.spawn(function()
 	repeat task.wait()
 		pcall(function()
-			for i,v in pairs(ArrayItems) do
+
+			local SortedArray = {}
+			for i, v in pairs(ArrayItems) do
+				table.insert(SortedArray, v)
+			end
+
+			table.sort(SortedArray, function(a, b)
+				return getAccurateTextSize(a.Text, a.TextSize) > getAccurateTextSize(b.Text, b.TextSize)
+			end)
+
+			local index = 0
+			for i,v in ipairs(SortedArray) do
+				index += 1
 				v.BackgroundTransparency = ArrayBackground.Enabled and 0.4 or 1
 				v.Line.BackgroundTransparency = ArrayLine.Enabled and 0 or 1
 				v.Shadow.Visible = ArrayShadow.Enabled
-				v.TextColor3 = GuiLibrary.Theme
-				v.Line.BackgroundColor3 = GuiLibrary.Theme
+
+				if CustomThemeRainbow.Enabled then
+					local hue = (tick() * 0.5 + (index / #SortedArray)) % 1
+					local rainbowColor = Color3.fromHSV(hue, 1, 1)
+
+					v.TextColor3 = rainbowColor
+					v.Line.BackgroundColor3 = rainbowColor
+				else
+					v.TextColor3 = GuiLibrary.Theme
+					v.Line.BackgroundColor3 = GuiLibrary.Theme
+				end
+
 			end
+
+			table.clear(SortedArray)
 		end)
 	until false
 end)
@@ -220,6 +355,10 @@ function GuiLibrary:CreateNotification(text, duration)
 	NotificationDuration.BackgroundColor3 = GuiLibrary.Theme
 	NotificationDuration.Position = UDim2.fromScale(0,0.95)
 
+	local themeEvent = GuiLibrary.ThemeUpdate.Event:Connect(function(newTheme)
+		NotificationDuration.BackgroundColor3 = newTheme
+	end)
+
 	TweenService:Create(NotificationDuration, TweenInfo.new(duration + 0.3), {
 		Size = UDim2.fromScale(0, 0.05)
 	}):Play()
@@ -230,6 +369,10 @@ function GuiLibrary:CreateNotification(text, duration)
 		}):Play()
 
 		Debris:AddItem(Notification, 0.35)
+
+		task.delay(0.35, function()
+			themeEvent:Disconnect()
+		end)
 	end)
 end
 
@@ -343,6 +486,12 @@ function GuiLibrary:CreateWindow(name)
 			KeybindSideLine.BorderSizePixel = 0
 			KeybindSideLine.BackgroundColor3 = GuiLibrary.Theme
 
+			
+			GuiLibrary.ThemeUpdate.Event:Connect(function(newTheme)
+				KeybindSideLine.BackgroundColor3 = darkenColor(newTheme, 0.6)
+			end)
+
+
 			local SettingsFrameSorter = Instance.new("UIListLayout", SettingsFrame)
 			SettingsFrameSorter.SortOrder = Enum.SortOrder.LayoutOrder
 			SettingsFrameSorter.FillDirection = Enum.FillDirection.Vertical
@@ -356,8 +505,6 @@ function GuiLibrary:CreateWindow(name)
 
 			function ButtonFunctions:Toggle()
 				ButtonFunctions.Enabled = not ButtonFunctions.Enabled
-
-				task.spawn(tab.Function, ButtonFunctions.Enabled)
 
 				if ButtonFunctions.Enabled then
 					DuplicateButton = Button:Clone()
@@ -377,6 +524,12 @@ function GuiLibrary:CreateWindow(name)
 						SettingsFrame.Visible = not SettingsFrame.Visible
 					end)
 					DuplicateColorConnection = GuiLibrary.ThemeUpdate.Event:Connect(function(newTheme)
+						if CustomThemeRainbow.Enabled then
+							DuplicateButton.BackgroundColor3 = darkenColor(newTheme,0.8)
+							return
+						end
+
+
 						DuplicateButton.BackgroundColor3 = newTheme
 					end)
 					ArrayList.Create(tab.Name)
@@ -400,6 +553,8 @@ function GuiLibrary:CreateWindow(name)
 				end
 
 				Config.Buttons[tab.Name].Enabled = ButtonFunctions.Enabled
+
+				task.spawn(tab.Function, ButtonFunctions.Enabled)
 
 				task.delay(0.1, saveconfig)
 			end
@@ -426,7 +581,7 @@ function GuiLibrary:CreateWindow(name)
 				SettingsSideLine.Size = UDim2.fromScale(0.015, 1)
 				SettingsSideLine.Position = UDim2.fromScale(0, 0)
 				SettingsSideLine.BorderSizePixel = 0
-				SettingsSideLine.BackgroundColor3 = GuiLibrary.Theme
+				SettingsSideLine.BackgroundColor3 = darkenColor(GuiLibrary.Theme, 0.6)
 
 				local ToggleFunctions = {Enabled = false}
 
@@ -438,15 +593,11 @@ function GuiLibrary:CreateWindow(name)
 				FakeToggleText.Parent = Toggle
 				FakeToggleText.Size = UDim2.fromScale(1, 1)
 
-				GuiLibrary.ThemeUpdate.Event:Connect(function(newTheme)
-					SettingsSideLine.BackgroundColor3 = newTheme
-				end)
-
 				function ToggleFunctions:Toggle()
 					ToggleFunctions.Enabled = not ToggleFunctions.Enabled
 
 					if tab2.Function then
-						task.spawn(tab2.Function, ToggleFunctions.Enabled)
+						tab2.Function(ToggleFunctions.Enabled)
 					end
 
 					if ToggleFunctions.Enabled then
@@ -483,70 +634,78 @@ function GuiLibrary:CreateWindow(name)
 					ToggleFunctions:Toggle()
 				end
 
+				GuiLibrary.ThemeUpdate.Event:Connect(function(newTheme)
+					SettingsSideLine.BackgroundColor3 = darkenColor(newTheme, 0.6)
+				end)
+
 				return ToggleFunctions
 			end
 
 
 			function ButtonFunctions.CreatePicker(tab2)
-
-				if Config.Pickers[tab.Name.."_"..tab2.Name] == nil then
-					Config.Pickers[tab.Name.."_"..tab2.Name] = {Option = tab2.Options[1]}
+				local pickerKey = tab.Name .. "_" .. tab2.Name
+			
+				if not Config.Pickers[pickerKey] or not Config.Pickers[pickerKey].Option then
+					Config.Pickers[pickerKey] = { Option = tab2.Options[1] }
 				end
-
+			
 				local Picker = Instance.new("TextButton", SettingsFrame)
 				Picker.Size = UDim2.new(1, 0, 0, 30)
 				Picker.BorderSizePixel = 0
-				Picker.BackgroundColor3 = Color3.fromRGB(45,45,45)
-				Picker.TextColor3 = Color3.fromRGB(255,255,255)
+				Picker.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+				Picker.TextColor3 = Color3.fromRGB(255, 255, 255)
 				Picker.TextSize = 10
-				Picker.Text = "  "..tab2.Name..": "..tab2.Options[1]
 				Picker.TextXAlignment = Enum.TextXAlignment.Left
-
+			
 				local SettingsSideLine = Instance.new("Frame", Picker)
-				SettingsSideLine.Size = UDim2.fromScale(0.015,1)
-				SettingsSideLine.Position = UDim2.fromScale(0,0)
+				SettingsSideLine.Size = UDim2.fromScale(0.015, 1)
+				SettingsSideLine.Position = UDim2.fromScale(0, 0)
 				SettingsSideLine.BorderSizePixel = 0
 				SettingsSideLine.BackgroundColor3 = GuiLibrary.Theme
-
-				local PickerFunctions = {Option = tab2.Options[1]}
-
-				local index = 1
+			
+				local PickerFunctions = { Option = Config.Pickers[pickerKey].Option }
+			
+				local function updatePickerText()
+					Picker.Text = "  " .. tab2.Name .. ": " .. (PickerFunctions.Option or "N/A")
+				end
+			
+				local index = table.find(tab2.Options, PickerFunctions.Option) or 1
+			
 				function PickerFunctions:Select(selection)
-
 					if selection == nil then
-
-
-						index += 1
-
-						if index > #tab2.Options then
-							index = 1
-						end
+						index = index % #tab2.Options + 1
 					else
-						for i,v in pairs(tab2.Options) do
+						for i, v in ipairs(tab2.Options) do
 							if v:lower() == selection:lower() then
 								index = i
 								break
 							end
 						end
 					end
-
-					PickerFunctions.Option = tab2.Options[index]
-					Picker.Text = "  "..tab2.Name..": "..tab2.Options[index]
-					if tab2.Function then
-						task.spawn(tab2.Function, PickerFunctions.Option)
-					end
-					Config.Pickers[tab.Name.."_"..tab2.Name] = PickerFunctions.Option
+			
+					PickerFunctions.Option = tab2.Options[index] or tab2.Options[1]
+					Config.Pickers[pickerKey].Option = PickerFunctions.Option
+					updatePickerText()
 					task.delay(0.1, saveconfig)
+			
+					if tab2.Function then
+						tab2.Function(PickerFunctions.Option)
+					end
 				end
-
+			
 				Picker.MouseButton1Down:Connect(function()
 					PickerFunctions:Select()
 				end)
 
-				PickerFunctions:Select(Config.Pickers[tab.Name.."_"..tab2.Name].Option)
-
+				GuiLibrary.ThemeUpdate.Event:Connect(function(newTheme)
+					SettingsSideLine.BackgroundColor3 = darkenColor(newTheme, 0.6)
+				end)
+			
+				updatePickerText()
 				return PickerFunctions
 			end
+			
+			
 
 			function ButtonFunctions.CreateSlider(tab2)
 
@@ -563,7 +722,7 @@ function GuiLibrary:CreateWindow(name)
 				SettingsSideLine.Size = UDim2.fromScale(0.015,1)
 				SettingsSideLine.Position = UDim2.fromScale(0,0)
 				SettingsSideLine.BorderSizePixel = 0
-				SettingsSideLine.BackgroundColor3 = GuiLibrary.Theme
+				SettingsSideLine.BackgroundColor3 = Color3.fromRGB(30,30,30)
 
 				local SliderName = Instance.new("TextLabel", SliderFrame)
 				SliderName.Size = UDim2.new(1, 0, 0.5, 0)
@@ -577,13 +736,13 @@ function GuiLibrary:CreateWindow(name)
 				local SliderBar = Instance.new("Frame", SliderFrame)
 				SliderBar.Size = UDim2.fromScale(0.7, 0.3)
 				SliderBar.Position = UDim2.fromScale(0.15, 0.55)
-				SliderBar.BackgroundColor3 = GuiLibrary.Theme
+				SliderBar.BackgroundColor3 = Color3.fromRGB(30,30,30)
 				SliderBar.ClipsDescendants = true
 				local SliderBarRound = Instance.new("UICorner", SliderBar)
 
 				local SliderFill = Instance.new("Frame", SliderBar)
 				SliderFill.Size = UDim2.new(0, 0, 1, 0)
-				SliderFill.BackgroundColor3 = GuiLibrary.Theme
+				SliderFill.BackgroundColor3 = Color3.fromRGB(30,30,30)
 				local SliderFillRound = Instance.new("UICorner", SliderFill)
 
 				local SliderButton = Instance.new("TextButton", SliderBar)
@@ -607,13 +766,12 @@ function GuiLibrary:CreateWindow(name)
 					SliderFunctions.Value = value
 					Config.Sliders[tab.Name.."_"..tab2.Name].Value = value
 					SliderFill.Size = UDim2.new(relativeX, 0, 1, 0)
-					--SliderButton.Position = UDim2.new(relativeX, -7, 0, 0)
 					SliderName.Text = tab2.Name .. " (" .. value .. ")"
 
 					TweenService:Create(SliderButton, TweenInfo.new(0.1), {Position = UDim2.new(relativeX, -7, 0, 0)}):Play()
 
 					if tab2.Function then
-						task.spawn(tab2.Function, value)
+						tab2.Function(value)
 					end
 
 					task.delay(0.1,saveconfig)
@@ -653,17 +811,20 @@ function GuiLibrary:CreateWindow(name)
 					SliderName.Text = tab2.Name .. " (" .. value .. ")"
 					TweenService:Create(SliderButton, TweenInfo.new(0.1), {Position = UDim2.new((value - tab2.Min) / (tab2.Max - tab2.Min), -7, 0, 0)}):Play()
 					if tab2.Function then
-						task.spawn(tab2.Function, value)
+						tab2.Function(value)
 					end
 					task.delay(0.1,saveconfig)
 				end
 
 				SliderFunctions.SetValue(Config.Sliders[tab.Name.."_"..tab2.Name].Value)
 
-				--SliderFill.Size = UDim2.new(0, 0, 1, 0)
-
 				SliderButton.InputBegan:Connect(SliderFunctions.Input)
 				SliderBar.InputBegan:Connect(SliderFunctions.Input)
+
+				GuiLibrary.ThemeUpdate.Event:Connect(function(newTheme)
+					SettingsSideLine.BackgroundColor3 = darkenColor(newTheme, 0.6)
+					SliderFill.BackgroundColor3 = darkenColor(newTheme, 0.6)
+				end)
 
 				return SliderFunctions
 			end
@@ -721,6 +882,7 @@ end)
 GuiLibrary:CreateWindow("Combat")
 GuiLibrary:CreateWindow("Movement")
 GuiLibrary:CreateWindow("Render")
+GuiLibrary:CreateWindow("World")
 GuiLibrary:CreateWindow("Utility")
 
 local origArraySize = ArrayListFrame.Size
@@ -777,13 +939,20 @@ CustomTheme = GuiLibrary.Windows.Render.CreateModuleButton({
 				local last = GuiLibrary.Theme
 				repeat
 					pcall(function()
-						GuiLibrary.Theme = Color3.fromRGB(CustomThemeColorRed.Value,CustomThemeColorGreen.Value,CustomThemeColorBlue.Value)
-
-						if GuiLibrary.Theme ~= last then
+						if CustomThemeRainbow.Enabled then
+							local hue = (tick() * 0.5 + (0.1)) % 1
+							local rainbowColor = Color3.fromHSV(hue, 1, 1)
+							GuiLibrary.Theme = rainbowColor
 							GuiLibrary.ThemeUpdate:Fire(GuiLibrary.Theme)
-						end
+						else
+							GuiLibrary.Theme = Color3.fromRGB(CustomThemeColorRed.Value,CustomThemeColorGreen.Value,CustomThemeColorBlue.Value)
 
-						last = GuiLibrary.Theme
+							if GuiLibrary.Theme ~= last then
+								GuiLibrary.ThemeUpdate:Fire(GuiLibrary.Theme)
+							end
+
+							last = GuiLibrary.Theme
+						end
 					end)
 					task.wait()
 				until not CustomTheme.Enabled
@@ -794,6 +963,11 @@ CustomTheme = GuiLibrary.Windows.Render.CreateModuleButton({
 			end)
 		end
 	end,
+})
+
+CustomThemeRainbow = CustomTheme.CreateToggle({
+	Name = "Rainbow",
+	Function = function() end,
 })
 
 CustomThemeColorRed = CustomTheme.CreateSlider({

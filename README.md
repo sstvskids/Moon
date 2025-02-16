@@ -7,4 +7,4 @@ We offer:
 
 The script is FREE, but there will eventually be a premium option for BETTER quality, BETTER modules, and MORE games supported!
 
-Join today @ [(discord)](https://discord.gg/CPaUDfZT6C)
+Join today @ our [discord](https://discord.gg/CPaUDfZT6C)

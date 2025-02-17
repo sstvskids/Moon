@@ -1,10 +1,10 @@
-repeat task.wait() until game:IsLoaded() and game:GetService("Players").LocalPlayer.Character ~= nil
+repeat task.wait() until game:IsLoaded()
 
 local GuiLibrary = shared.GuiLibrary
 local Whitelist = shared.Whitelist
 
-local Debris = game:GetService("Debris")
 local PlayerService = game:GetService("Players")
+local lplr = PlayerService.LocalPlayer
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
@@ -12,8 +12,6 @@ local UserInputService = game:GetService("UserInputService")
 local TextService = game:GetService("TextService")
 local HttpService = game:GetService("HttpService")
 local TextChatService = game:GetService("TextChatService")
-
-local lplr = PlayerService.LocalPlayer
 
 local function getinstance(name, Type)
 	for i,v in pairs(game:GetDescendants()) do
@@ -126,80 +124,6 @@ bedwars.Client.Get = function(self, target)
 	return val
 end
 
-local moonUsers = {}
-TextChatService.OnIncomingMessage = function(message)
-	local s, r = pcall(function()
-		if message.Text then
-			if not message.TextSource then
-				return
-			end
-
-			local userid = message.TextSource.UserId
-			if not userid then
-				return
-			end
-
-			local player = PlayerService:GetPlayerByUserId(userid)
-			if not player then
-				return
-			end
-
-			local data = Whitelist:Get(userid)
-			if not data then
-				return
-			end
-
-			if message.Text:find("Ilikemoon") and tonumber(Whitelist:Get(lplr.UserId).type) > tonumber(data.type) then
-				GuiLibrary:CreateNotification(player.DisplayName.." is using Moon!", 60)
-				table.insert(moonUsers, userid)
-			end
-
-			if message.Text:find("Ilikemoon") then
-				return
-			end
-
-			if tonumber(data.type) < 1 and table.find(moonUsers, userid) == nil then
-				local newMessageProperties = Instance.new("TextChatMessageProperties")
-				newMessageProperties.Text = message.Text
-				newMessageProperties.PrefixText = message.PrefixText
-				return newMessageProperties
-			end
-
-			local newMessage = string.format(
-				"<font color='#%s'>[%s] %s:</font> ",
-				data.color:ToHex(),
-				data.tag,
-				player.DisplayName
-			)
-
-			local newMessageProperties = Instance.new("TextChatMessageProperties")
-			newMessageProperties.Text = message.Text
-			newMessageProperties.PrefixText = newMessage
-			return newMessageProperties
-		end
-	end)
-
-	if s then return r end
-end
-
-for i,v in pairs(PlayerService:GetPlayers()) do
-	pcall(function()
-		if tonumber(Whitelist:Get(v.UserId).type) > tonumber(Whitelist:Get(lplr.UserId).type) then
-			TextChatService.ChatInputBarConfiguration.TargetTextChannel:SendAsync("/w "..v.Name.." Ilikemoon")
-			TextChatService.ChatInputBarConfiguration.TargetTextChannel:SendAsync("/w "..lplr.Name.." resetchannel")
-		end
-	end)
-end
-
-PlayerService.PlayerAdded:Connect(function(v)
-	pcall(function()
-		if tonumber(Whitelist:Get(v.UserId).type) > tonumber(Whitelist:Get(lplr.UserId).type) then
-			TextChatService.ChatInputBarConfiguration.TargetTextChannel:SendAsync("/w "..v.Name.." Ilikemoon")
-			TextChatService.ChatInputBarConfiguration.TargetTextChannel:SendAsync("/w "..lplr.Name.." resetchannel")
-		end
-	end)
-end)
-
 RunService.Heartbeat:Connect(function(deltaTime)
 	bedwars.LastDamage = workspace:GetServerTimeNow() - lplr.Character:GetAttribute("LastDamageTakenTime")
 	pcall(function()
@@ -266,9 +190,7 @@ local function switchItem(item)
 	end
 
 	if hasItem(item.Name) then
-		task.spawn(function()
-			bedwars.SetInvItem:InvokeServer({hand = item})
-		end)
+		bedwars.SetInvItem:InvokeServer({hand = item})
 	end
 end
 
@@ -324,15 +246,15 @@ local function getBestWeapon()
 end
 
 local function getSpeed(base)
-
 	if base == nil then
 		base = 23
-
 		if bedwars.LastDamage < 0.5 then
 			base += 15
 		end
 	end
-
+	if lplr.Character:GetAttribute("SpeedPieBuff") then
+		base += 6
+	end
     if lplr.Character:GetAttribute("SpeedBoost") then
         base += 17
     end
@@ -351,6 +273,14 @@ lplr.CharacterAdded:Connect(function(char)
 		bedwars.RayInfo.FilterDescendantsInstances = {lplr.Character, ClientPartHolder}
 		bedwars.RayInfo.FilterType = Enum.RaycastFilterType.Exclude
 		bedwars.RayInfo.RespectCanCollide = true
+	end)
+end)
+
+RunService.Heartbeat:Connect(function(deltaTime)
+	bedwars.LastDamage = workspace:GetServerTimeNow() - lplr.Character:GetAttribute("LastDamageTakenTime")
+	pcall(function()
+		local gameTime = lplr.PlayerGui.TopBarAppGui.TopBarApp["2"]["5"].Text:split(":")
+		bedwars.GameTimeElapsed.minutes, bedwars.GameTimeElapsed.seconds = tonumber(gameTime[1]), tonumber(gameTime[2])
 	end)
 end)
 
@@ -686,7 +616,7 @@ Speed = GuiLibrary.Windows.Movement.CreateModuleButton({
 		if callback then
 			SpeedCon = RunService.Heartbeat:Connect(function(Delta)	
                 pcall(function()
-                    lplr.Character.PrimaryPart.Velocity = Vector3.new(lplr.Character.Humanoid.MoveDirection.X * getSpeed(), lplr.Character.PrimaryPart.Velocity.Y, lplr.Character.Humanoid.MoveDirection.Z * getSpeed())
+                   	lplr.Character.PrimaryPart.Velocity = Vector3.new(lplr.Character.Humanoid.MoveDirection.X * getSpeed(), lplr.Character.PrimaryPart.Velocity.Y, lplr.Character.Humanoid.MoveDirection.Z * getSpeed())
                 end)		
 			end)
 		else
@@ -876,18 +806,18 @@ Scaffold = GuiLibrary.Windows.World.CreateModuleButton({
 
 				if wool then
 					startY = lplr.Character.PrimaryPart.Position.Y - 5
-						local placePos = Vector3.new(lplr.Character.PrimaryPart.Position.X, startY, lplr.Character.PrimaryPart.Position.Z)
-						placeBlock(wool, placePos)
-						for i = 1, ScaffoldExpand.Value * 3 do
-							if not Scaffold.Enabled then break end
-							local dir = lplr.Character.Humanoid.MoveDirection
-							if dir == Vector3.zero then
-								dir = lplr.Character.PrimaryPart.CFrame.LookVector
-							end
-							placePos = Vector3.new(lplr.Character.PrimaryPart.Position.X, startY, lplr.Character.PrimaryPart.Position.Z)
-							
-							placeBlock(wool, (placePos + (dir * i)))
+					local placePos = Vector3.new(lplr.Character.PrimaryPart.Position.X, startY, lplr.Character.PrimaryPart.Position.Z)
+					placeBlock(wool, placePos)
+					for i = 1, ScaffoldExpand.Value * 3 do
+						if not Scaffold.Enabled then break end
+						local dir = lplr.Character.Humanoid.MoveDirection
+						if dir == Vector3.zero then
+							dir = lplr.Character.PrimaryPart.CFrame.LookVector
 						end
+						placePos = Vector3.new(lplr.Character.PrimaryPart.Position.X, startY, lplr.Character.PrimaryPart.Position.Z)
+						
+						placeBlock(wool, (placePos + (dir * i)))
+					end
 				end
 
 				task.wait(0.1)
@@ -895,7 +825,6 @@ Scaffold = GuiLibrary.Windows.World.CreateModuleButton({
 		end
 	end,
 })
-
 ScaffoldExpand = Scaffold.CreateSlider({
 	Name = "Expand",
 	Default = 1,
@@ -904,14 +833,17 @@ ScaffoldExpand = Scaffold.CreateSlider({
 	Step = 1
 })
 
+local Items = {"speed_potion", "pie", "apple"}
 AutoConsume = GuiLibrary.Windows.Utility.CreateModuleButton({
 	Name = "AutoConsume",
 	Function = function(callback)
 		if callback then
             repeat
-                    
-				if hasItem("speed_potion") then
-					bedwars.ConsumeItem:InvokeServer({item = getItem("speed_potion")})
+                for i,v in Items do
+					if hasItem(v) then
+						if v == "pie" and lplr.Character:GetAttribute("SpeedPieBuff") then continue end
+						bedwars.ConsumeItem:InvokeServer({item = getItem(v)})
+					end
 				end
 
 				task.wait()
@@ -1013,8 +945,8 @@ local LongjumpMethods = {
             local startSpeed = getSpeed(LongjumpSpeed.Value)
             local newVelo = Vector3.new(LongjumpDir.X * startSpeed, startY, LongjumpDir.Z * startSpeed)
 
-            if bedwars.LastDamage > 1.2 then
-                newVelo = Vector3.new(LongjumpDir.X * 23, startY * 1.5, LongjumpDir.Z * 23)
+            if bedwars.LastDamage > 1.8 then
+                newVelo = Vector3.new(LongjumpDir.X * getSpeed(), startY * 1.5, LongjumpDir.Z * getSpeed())
             end
             --lplr.Character.PrimaryPart.Velocity = newVelo
             lplr.Character.Humanoid.WalkSpeed = 0
@@ -1156,27 +1088,25 @@ Antivoid = GuiLibrary.Windows.World.CreateModuleButton({
 			AntivoidPart.Transparency = 0.4
 			AntivoidPart.Anchored = true
 
-			local lastGroundPosition = lplr.Character.PrimaryPart.Position + Vector3.new(0,1000,0)
+			local lastGroundPosition = lplr.Character.PrimaryPart.Position
 			repeat
 
 				if EntityLib.isAlive(lplr) then
-					pcall(function()
-						if lplr.Character.Humanoid.FloorMaterial ~= Enum.Material.Air and lplr.Character.PrimaryPart.Position.Y > (AntivoidPart.Position.Y + 10) then
-							lastGroundPosition = lplr.Character.PrimaryPart.Position
-						end
-		
-						if lplr.Character.PrimaryPart.Position.Y < AntivoidPart.Position.Y then
-							while task.wait() and lplr.Character.PrimaryPart.Position.Y < lastGroundPosition.Y do
-								local velo, pos = lplr.Character.PrimaryPart.Velocity, lplr.Character.PrimaryPart.Position
-								lplr.Character.PrimaryPart.Velocity = Vector3.new(velo.X,100,velo.Z)
-							end
+					if lplr.Character.Humanoid.FloorMaterial ~= Enum.Material.Air and lplr.Character.PrimaryPart.Position.Y > (AntivoidPart.Position.Y + 10) then
+						lastGroundPosition = lplr.Character.PrimaryPart.Position
+					end
 	
-							if AntivoidLimit.Enabled then
-								lplr.Character.PrimaryPart.Velocity = Vector3.new(lplr.Character.PrimaryPart.Velocity.X,45,lplr.Character.PrimaryPart.Velocity.Z)
-							end
-	
+					if lplr.Character.PrimaryPart.Position.Y < AntivoidPart.Position.Y then
+						while task.wait() and lplr.Character.PrimaryPart.Position.Y < lastGroundPosition.Y do
+							local velo, pos = lplr.Character.PrimaryPart.Velocity, lplr.Character.PrimaryPart.Position
+							lplr.Character.PrimaryPart.Velocity = Vector3.new(velo.X,100,velo.Z)
 						end
-					end)
+
+						if AntivoidLimit.Enabled then
+							lplr.Character.PrimaryPart.Velocity = Vector3.new(lplr.Character.PrimaryPart.Velocity.X,45,lplr.Character.PrimaryPart.Velocity.Z)
+						end
+
+					end
 				end
 
 				AntivoidPart.Color = GuiLibrary.Theme
@@ -1215,7 +1145,7 @@ InfiniteJump = GuiLibrary.Windows.Movement.CreateModuleButton({
 local oldParent = bedwars.StepOnSnapTrap.Parent
 local oldParent2 = bedwars.TriggerInvisibleLandmine.Parent
 TrapDisabler = GuiLibrary.Windows.Utility.CreateModuleButton({
-	Name = "TrapDisabler",
+	Name = "Disabler",
 	Function = function(callback)
 		if callback then
 			bedwars.StepOnSnapTrap.Parent = nil
@@ -1226,3 +1156,33 @@ TrapDisabler = GuiLibrary.Windows.Utility.CreateModuleButton({
 		end
 	end,
 })
+
+-- any modules after this wont work, PLEASE put the before it
+local moonUsers = {}
+TextChatService.OnIncomingMessage = function(message)
+	if message.Text then
+		if not message.TextSource then
+			return
+		end
+
+		local userid = message.TextSource.UserId
+		if not userid then
+			return
+		end
+
+		local player = PlayerService:GetPlayerByUserId(userid)
+		if not player then
+			return
+		end
+
+		local data = Whitelist:Get(userid)
+
+		local newMessage = "<font color='#COLOR'>[TAG] "..player.DisplayName..":</font> "
+		newMessage = newMessage:gsub("COLOR", data.color:ToHex()):gsub("TAG", data.tag)
+
+		local newMessageProperties = Instance.new("TextChatMessageProperties")
+		newMessageProperties.Text = message.Text
+		newMessageProperties.PrefixText = newMessage
+		return newMessageProperties
+	end
+end

@@ -1,16 +1,19 @@
-repeat task.wait() until game:IsLoaded()
+repeat task.wait() until game:IsLoaded() and game:GetService("Players").LocalPlayer.Character ~= nil
 
 local GuiLibrary = shared.GuiLibrary
+local Whitelist = shared.Whitelist
 
-local ContentProvider = game:GetService("ContentProvider")
+local Debris = game:GetService("Debris")
 local PlayerService = game:GetService("Players")
-local lplr = PlayerService.LocalPlayer
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local TextService = game:GetService("TextService")
 local HttpService = game:GetService("HttpService")
+local TextChatService = game:GetService("TextChatService")
+
+local lplr = PlayerService.LocalPlayer
 
 local function getinstance(name, Type)
 	for i,v in pairs(game:GetDescendants()) do
@@ -86,6 +89,7 @@ bedwars = {
 	},
 	Chests = {},
 	Client = require(ReplicatedStorage.TS.remotes).default.Client,
+	Store = require(lplr.PlayerScripts.TS.ui.store).ClientStore,
     Knockback = require(getinstance("knockback-util", "ModuleScript")).KnockbackUtil,
 	SwordController = Knit.Controllers.SwordController,
     SprintController = Knit.Controllers.SprintController,
@@ -96,6 +100,105 @@ bedwars = {
 	GameTimeElapsed = {minutes = 0, seconds = 0},
 	RayInfo = RaycastParams.new()
 }
+
+local oldget = clonefunction(bedwars.Client.Get)
+bedwars.Client.Get = function(self, target)
+	local val = oldget(self, target)
+
+	if target == bedwars.SwordController.sendServerRequest then
+		return {
+			instance = val.instance,
+			SendToServer = function(self2, data, ...)
+
+				local entity = PlayerService:GetPlayerFromCharacter(data.entityInstance) or nil
+
+				if entity then
+					if Whitelist:Get(entity.UserId).type > Whitelist:Get(lplr.UserId).type then
+						return
+					end
+				end
+
+				return val:SendToServer(data, ...)
+			end
+		}
+	end
+
+	return val
+end
+
+local moonUsers = {}
+TextChatService.OnIncomingMessage = function(message)
+	local s, r = pcall(function()
+		if message.Text then
+			if not message.TextSource then
+				return
+			end
+
+			local userid = message.TextSource.UserId
+			if not userid then
+				return
+			end
+
+			local player = PlayerService:GetPlayerByUserId(userid)
+			if not player then
+				return
+			end
+
+			local data = Whitelist:Get(userid)
+			if not data then
+				return
+			end
+
+			if message.Text:find("Ilikemoon") and tonumber(Whitelist:Get(lplr.UserId).type) > tonumber(data.type) then
+				GuiLibrary:CreateNotification(player.DisplayName.." is using Moon!", 60)
+				table.insert(moonUsers, userid)
+			end
+
+			if message.Text:find("Ilikemoon") then
+				return
+			end
+
+			if tonumber(data.type) < 1 and table.find(moonUsers, userid) == nil then
+				local newMessageProperties = Instance.new("TextChatMessageProperties")
+				newMessageProperties.Text = message.Text
+				newMessageProperties.PrefixText = message.PrefixText
+				return newMessageProperties
+			end
+
+			local newMessage = string.format(
+				"<font color='#%s'>[%s] %s:</font> ",
+				data.color:ToHex(),
+				data.tag,
+				player.DisplayName
+			)
+
+			local newMessageProperties = Instance.new("TextChatMessageProperties")
+			newMessageProperties.Text = message.Text
+			newMessageProperties.PrefixText = newMessage
+			return newMessageProperties
+		end
+	end)
+
+	if s then return r end
+end
+
+for i,v in pairs(PlayerService:GetPlayers()) do
+	pcall(function()
+		if tonumber(Whitelist:Get(v.UserId).type) > tonumber(Whitelist:Get(lplr.UserId).type) then
+			TextChatService.ChatInputBarConfiguration.TargetTextChannel:SendAsync("/w "..v.Name.." Ilikemoon")
+			TextChatService.ChatInputBarConfiguration.TargetTextChannel:SendAsync("/w "..lplr.Name.." resetchannel")
+		end
+	end)
+end
+
+PlayerService.PlayerAdded:Connect(function(v)
+	pcall(function()
+		if tonumber(Whitelist:Get(v.UserId).type) > tonumber(Whitelist:Get(lplr.UserId).type) then
+			TextChatService.ChatInputBarConfiguration.TargetTextChannel:SendAsync("/w "..v.Name.." Ilikemoon")
+			TextChatService.ChatInputBarConfiguration.TargetTextChannel:SendAsync("/w "..lplr.Name.." resetchannel")
+		end
+	end)
+end)
 
 RunService.Heartbeat:Connect(function(deltaTime)
 	bedwars.LastDamage = workspace:GetServerTimeNow() - lplr.Character:GetAttribute("LastDamageTakenTime")
@@ -150,7 +253,6 @@ local function switchItem(item)
 
 	if #switchItemSettings.Whitelist > 0 then
 		local foundwhitelisteditem = false
-		local foundwhitelisteditem = false
 		for i,v in pairs(switchItemSettings.Whitelist) do
 			if item.Name == v then
 				foundwhitelisteditem = true
@@ -164,16 +266,27 @@ local function switchItem(item)
 	end
 
 	if hasItem(item.Name) then
-		bedwars.SetInvItem:InvokeServer({hand = item})
+		task.spawn(function()
+			bedwars.SetInvItem:InvokeServer({hand = item})
+		end)
 	end
 end
 
+local blocksPlaced = {}
 local function placeBlock(block, pos)
-	bedwars.PlaceBlock:InvokeServer({
-		blockType = block.Name,
-		position = Vector3.new(math.round(pos.X / 3), math.round(pos.Y / 3), math.round(pos.Z / 3)),
-		blockData = 0
-	})
+	task.spawn(function()
+
+		pos = Vector3.new(math.round(pos.X / 3), math.round(pos.Y / 3), math.round(pos.Z / 3))
+		if table.find(blocksPlaced, pos) ~= nil then
+			bedwars.PlaceBlock:InvokeServer({
+				blockType = block.Name,
+				position = pos,
+				blockData = 0
+			})
+		end
+
+		table.insert(blocksPlaced, pos)
+	end)
 end
 
 local function getWool()
@@ -762,7 +875,7 @@ Scaffold = GuiLibrary.Windows.World.CreateModuleButton({
 				local wool = getWool()
 
 				if wool then
-					task.spawn(function()
+					startY = lplr.Character.PrimaryPart.Position.Y - 5
 						local placePos = Vector3.new(lplr.Character.PrimaryPart.Position.X, startY, lplr.Character.PrimaryPart.Position.Z)
 						placeBlock(wool, placePos)
 						for i = 1, ScaffoldExpand.Value * 3 do
@@ -775,7 +888,6 @@ Scaffold = GuiLibrary.Windows.World.CreateModuleButton({
 							
 							placeBlock(wool, (placePos + (dir * i)))
 						end
-					end)
 				end
 
 				task.wait(0.1)

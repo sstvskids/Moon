@@ -80,7 +80,8 @@ local Assets = {
 	Info = "rbxassetid://11422155687",
 	Success = "rbxassetid://11419719540",
 	Error = "rbxassetid://11419709766",
-	Circle = "rbxassetid://10928806245"
+	Circle = "rbxassetid://10928806245",
+	Logo = "rbxassetid://12543567695"
 }
 
 if not isfile(configPath) then
@@ -103,9 +104,26 @@ NotificationFrameSorter.VerticalAlignment = Enum.VerticalAlignment.Bottom
 NotificationFrameSorter.HorizontalAlignment = Enum.HorizontalAlignment.Right
 NotificationFrameSorter.Padding = UDim.new(0.015,0)
 
+local Logo = Instance.new("ImageLabel", ScreenGui)
+Logo.Size = UDim2.fromScale(0.075,0.1)
+Logo.Position = UDim2.fromScale(0.76,0.125)
+Logo.BackgroundTransparency = 1
+Logo.Visible = false
+Logo.Image = Assets.Logo
+Logo.ImageColor3 = GuiLibrary.Theme
+
+local LogoText = Instance.new("TextLabel", ScreenGui)
+LogoText.Size = UDim2.fromScale(0.075,0.1)
+LogoText.Position = UDim2.fromScale(0.76,0.17)
+LogoText.BackgroundTransparency = 1
+LogoText.Visible = false
+LogoText.Text = "MOON"
+LogoText.TextColor3 = GuiLibrary.Theme
+LogoText.TextSize = 30
+
 local ArrayListFrame = Instance.new("Frame", ScreenGui)
 ArrayListFrame.Size = UDim2.fromScale(0.2,0.7)
-ArrayListFrame.Position = UDim2.fromScale(0.7,0.2)
+ArrayListFrame.Position = UDim2.fromScale(0.7,0.25)
 ArrayListFrame.BackgroundTransparency = 1
 ArrayListFrame.Visible = false
 local ArrayListFrameSorter = Instance.new("UIListLayout", ArrayListFrame)
@@ -902,6 +920,18 @@ ArrayListModule = GuiLibrary.Windows.Render.CreateModuleButton({
 					ArrayListFrame.Size = UDim2.fromScale(origArraySize.X.Scale * ret, origArraySize.Y.Scale * ret)
 				end
 
+				if ArrayLogo then
+
+					if ArrayLogo.Option == "Image" then
+						Logo.Visible = true
+						LogoText.Visible = false
+					else
+						Logo.Visible = false
+						LogoText.Visible = true
+					end
+
+				end
+
 				task.wait()
 			until not ArrayListModule.Enabled
 		end)
@@ -922,7 +952,11 @@ ArrayShadow = ArrayListModule.CreateToggle({
 	Name = "Shadow",
 	Function = function() end,
 })
-
+ArrayLogo = ArrayListModule.CreatePicker({
+	Name = "Logo",
+	Options = {"Image", "Text"},
+	Function = function() end,
+})
 ArrayScale = ArrayListModule.CreateSlider({
 	Name = "Scale",
 	Default = 100,
@@ -944,11 +978,15 @@ CustomTheme = GuiLibrary.Windows.Render.CreateModuleButton({
 							local rainbowColor = Color3.fromHSV(hue, 1, 1)
 							GuiLibrary.Theme = rainbowColor
 							GuiLibrary.ThemeUpdate:Fire(GuiLibrary.Theme)
+							Logo.ImageColor3 = GuiLibrary.Theme
+							LogoText.TextColor3 = GuiLibrary.Theme
 						else
 							GuiLibrary.Theme = Color3.fromRGB(CustomThemeColorRed.Value,CustomThemeColorGreen.Value,CustomThemeColorBlue.Value)
 
 							if GuiLibrary.Theme ~= last then
 								GuiLibrary.ThemeUpdate:Fire(GuiLibrary.Theme)
+								Logo.ImageColor3 = GuiLibrary.Theme
+								LogoText.TextColor3 = GuiLibrary.Theme
 							end
 
 							last = GuiLibrary.Theme

@@ -627,6 +627,7 @@ Speed = GuiLibrary.Windows.Movement.CreateModuleButton({
 	end,
 })
 
+local wasSpeedToggled = false
 LagbackDetector = GuiLibrary.Windows.Utility.CreateModuleButton({
 	Name = "LagbackDetector",
 	Function = function(callback)
@@ -639,9 +640,19 @@ LagbackDetector = GuiLibrary.Windows.Utility.CreateModuleButton({
 						if isnetworkowner(lplr.Character.PrimaryPart) then
 							lagback = true
 						else
-	
 							if lagback then
+								wasSpeedToggled = Speed.Enabled
+
+								if wasSpeedToggled then
+									Speed:Toggle()
+								end
 								GuiLibrary:CreateNotification("Lagback Detected!", 5)
+								task.delay(4, function()
+									if wasSpeedToggled then
+										Speed:Toggle()
+									end
+									wasSpeedToggled = false
+								end)
 							end
 	
 							lagback = false

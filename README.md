@@ -1,5 +1,6 @@
 > [!WARNING]
 > I do not own Moon, I simply made it work for people who want to use the shit version.
+> If the creators (springs67 or Damc) want this taken down, they can message ._stav on discord
 
 # Moon Script, the #1 roblox script utility.
 

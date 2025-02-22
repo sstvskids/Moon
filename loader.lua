@@ -1,7 +1,11 @@
 local LaunchId = math.random()
 
-if getgenv().LoadedFromTeleport == nil and not shared.MoonDeveloper and queueonteleport then
+getgenv().loadTeleport = function()
 	queueonteleport("getgenv().LoadedFromTeleport = true; loadstring(game:HttpGet('https://raw.githubusercontent.com/sstvskids/Moon/refs/heads/main/loader.lua', true))()")
+end
+
+if getgenv().LoadedFromTeleport == nil and not shared.MoonDeveloper and queueonteleport then
+	loadTeleport()
 end
 
 if shared.MoonDeveloper then

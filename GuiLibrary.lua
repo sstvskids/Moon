@@ -1046,6 +1046,7 @@ Uninject = GuiLibrary.Windows.Utility.CreateModuleButton({
 
 		ScreenGui:Destroy()
 		shared.GuiLibrary = nil
+		getgenv().loadTeleport = nil
 		getgenv().LoadedFromTeleport = nil
 	end,
 })

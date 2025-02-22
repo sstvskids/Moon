@@ -36,5 +36,4 @@ else
 	else
 		loadstring(fetch("Universal"))()
 	end
-	
 end

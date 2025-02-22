@@ -104,38 +104,31 @@ NotificationFrameSorter.VerticalAlignment = Enum.VerticalAlignment.Bottom
 NotificationFrameSorter.HorizontalAlignment = Enum.HorizontalAlignment.Right
 NotificationFrameSorter.Padding = UDim.new(0.015,0)
 
-local SubArrayListFrame = Instance.new("Frame", ScreenGui)
-SubArrayListFrame.Size = UDim2.fromScale(0.2,0.7)
-SubArrayListFrame.Position = UDim2.fromScale(0.7,0.25)
-SubArrayListFrame.BackgroundTransparency = 1
-SubArrayListFrame.Visible = false
-
-local ArrayListFrame = Instance.new("Frame", SubArrayListFrame)
-ArrayListFrame.Size = UDim2.fromScale(1, 1)
-ArrayListFrame.Position = UDim2.fromScale(0.7,0.25)
-ArrayListFrame.BackgroundTransparency = 1
-ArrayListFrame.Visible = true
-local ArrayListFrameSorter = Instance.new("UIListLayout", ArrayListFrame)
-ArrayListFrameSorter.HorizontalAlignment = Enum.HorizontalAlignment.Right
-ArrayListFrameSorter.SortOrder = Enum.SortOrder.LayoutOrder
-
-local Logo = Instance.new("ImageLabel", SubArrayListFrame)
-Logo.Size = UDim2.fromScale(1,0.5)
-Logo.Position = UDim2.fromScale(0,-0.2)
+local Logo = Instance.new("ImageLabel", ScreenGui)
+Logo.Size = UDim2.fromScale(0.075,0.1)
+Logo.Position = UDim2.fromScale(0.76,0.125)
 Logo.BackgroundTransparency = 1
 Logo.Visible = false
 Logo.Image = Assets.Logo
 Logo.ImageColor3 = GuiLibrary.Theme
 
-local LogoText = Instance.new("TextLabel", SubArrayListFrame)
-LogoText.Size = UDim2.fromScale(1,0.2)
-LogoText.Position = UDim2.fromScale(0.58,0.15)
+local LogoText = Instance.new("TextLabel", ScreenGui)
+LogoText.Size = UDim2.fromScale(0.075,0.1)
+LogoText.Position = UDim2.fromScale(0.76,0.17)
 LogoText.BackgroundTransparency = 1
 LogoText.Visible = false
 LogoText.Text = "MOON"
 LogoText.TextColor3 = GuiLibrary.Theme
 LogoText.TextSize = 30
-LogoText.TextXAlignment = Enum.TextXAlignment.Center
+
+local ArrayListFrame = Instance.new("Frame", ScreenGui)
+ArrayListFrame.Size = UDim2.fromScale(0.2,0.7)
+ArrayListFrame.Position = UDim2.fromScale(0.7,0.2)
+ArrayListFrame.BackgroundTransparency = 1
+ArrayListFrame.Visible = false
+local ArrayListFrameSorter = Instance.new("UIListLayout", ArrayListFrame)
+ArrayListFrameSorter.HorizontalAlignment = Enum.HorizontalAlignment.Right
+ArrayListFrameSorter.SortOrder = Enum.SortOrder.LayoutOrder
 
 local function getAccurateTextSize(text, size)
 	return TextService:GetTextSize(text, size, Enum.Font.SourceSans, Vector2.zero).X
@@ -910,11 +903,11 @@ GuiLibrary:CreateWindow("Render")
 GuiLibrary:CreateWindow("World")
 GuiLibrary:CreateWindow("Utility")
 
-local origArraySize = SubArrayListFrame.Size
+local origArraySize = ArrayListFrame.Size
 ArrayListModule = GuiLibrary.Windows.Render.CreateModuleButton({
 	Name = "ArrayList",
 	Function = function(callback)
-		SubArrayListFrame.Visible = callback
+		ArrayListFrame.Visible = callback
 
 		task.spawn(function()
 			repeat
@@ -924,17 +917,17 @@ ArrayListModule = GuiLibrary.Windows.Render.CreateModuleButton({
 				end)
 
 				if suc then
-					SubArrayListFrame.Size = UDim2.fromScale(origArraySize.X.Scale * ret, origArraySize.Y.Scale * ret)
+					ArrayListFrame.Size = UDim2.fromScale(origArraySize.X.Scale * ret, origArraySize.Y.Scale * ret)
 				end
 
 				if ArrayLogo then
 
 					if ArrayLogo.Option == "Image" then
-						--Logo.Visible = true
-						--LogoText.Visible = false
+						Logo.Visible = true
+						LogoText.Visible = false
 					else
-						--Logo.Visible = false
-						--LogoText.Visible = true
+						Logo.Visible = false
+						LogoText.Visible = true
 					end
 
 				end

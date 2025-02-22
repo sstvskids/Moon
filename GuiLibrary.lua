@@ -916,7 +916,7 @@ ArrayListModule = GuiLibrary.Windows.Render.CreateModuleButton({
 					return ArrayPosition.Value
 				end)
 
-				if suc then
+				if res then
 					ArrayListFrame.Position = UDim2.fromOffset(0.7, res)
 				end
 

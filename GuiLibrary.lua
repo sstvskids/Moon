@@ -911,15 +911,6 @@ ArrayListModule = GuiLibrary.Windows.Render.CreateModuleButton({
 
 		task.spawn(function()
 			repeat
-
-				local res, err = pcall(function()
-					return ArrayPosition.Value
-				end)
-
-				if res then
-					ArrayListFrame.Position = UDim2.fromOffset(0.7, err)
-				end
-
 				local suc, ret = pcall(function()
 					return ArrayScale.Value / 100
 				end)
@@ -971,13 +962,6 @@ ArrayScale = ArrayListModule.CreateSlider({
 	Min = 0,
 	Max = 100,
 	Step = 1,
-})
-ArrayPosition = ArrayListModule.CreateSlider({
-	Name = "Position",
-	Default = 2,
-	Min = 0,
-	Max = 2.5,
-	Step = 0.1,
 })
 
 CustomTheme = GuiLibrary.Windows.Render.CreateModuleButton({

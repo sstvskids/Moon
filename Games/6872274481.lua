@@ -385,8 +385,8 @@ Killaura = GuiLibrary.Windows.Combat.CreateModuleButton({
 						chargedAttack = {chargeRatio = 100},
 						entityInstance = Entity.Character,
 						validate = {
-							targetPosition = {value = Entity.Character.PrimaryPart.Position + Vector3.new(Entity.Character.PrimaryPart.Velocity.X / 20, 0, Entity.Character.PrimaryPart.Velocity.Z / 20)},
-							selfPosition = {value = lplr.Character.PrimaryPart.Position + Vector3.new(lplr.Character.PrimaryPart.Velocity.X / 20, 0, lplr.Character.PrimaryPart.Velocity.Z / 20)},
+							targetPosition = {value = Entity.Character.PrimaryPart.Position + Entity.Character.Humanoid.MoveDirection + Vector3.new(Entity.Character.PrimaryPart.Velocity.X / 20, 0, Entity.Character.PrimaryPart.Velocity.Z / 20)},
+							selfPosition = {value = lplr.Character.PrimaryPart.Position + lplr.Character.Humanoid.MoveDirection + Vector3.new(lplr.Character.PrimaryPart.Velocity.X / 20, 0, lplr.Character.PrimaryPart.Velocity.Z / 20)},
 						}
 					})
 

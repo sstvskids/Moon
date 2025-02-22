@@ -1,5 +1,5 @@
 local function fetch(placeid)
-	return game:HttpGet('https://raw.githubusercontent.com/ImDamc/Moon/refs/heads/main/Games/'..placeid..".lua", true)
+	return game:HttpGet('https://raw.githubusercontent.com/sstvskids/Moon/refs/heads/main/Games/'..placeid..".lua", true)
 end
 
 local function betterReadfile(path)

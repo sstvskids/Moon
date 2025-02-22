@@ -1,19 +1,19 @@
 local LaunchId = math.random()
 
 if getgenv().LoadedFromTeleport == nil and not shared.MoonDeveloper then
-	queue_on_teleport("getgenv().LoadedFromTeleport = true; loadstring(game:HttpGet('https://raw.githubusercontent.com/ImDamc/Moon/refs/heads/main/loader.lua', true))()")
+	queue_on_teleport("getgenv().LoadedFromTeleport = true; loadstring(game:HttpGet('https://raw.githubusercontent.com/sstvskids/Moon/refs/heads/main/loader.lua', true))()")
 end
 
 if shared.MoonDeveloper then
 	loadfile("Moon/GuiLibrary.lua")()
 else
-	loadstring(game:HttpGet('https://raw.githubusercontent.com/ImDamc/Moon/refs/heads/main/GuiLibrary.lua', true))()
+	loadstring(game:HttpGet('https://raw.githubusercontent.com/sstvskids/Moon/refs/heads/main/GuiLibrary.lua', true))()
 end
 
 repeat task.wait() until shared.GuiLibrary ~= nil
 
 local function fetch(placeid)
-	return game:HttpGet('https://raw.githubusercontent.com/ImDamc/Moon/refs/heads/main/Games/'..placeid..".lua", true)
+	return game:HttpGet('https://raw.githubusercontent.com/sstvskids/Moon/refs/heads/main/Games/'..placeid..".lua", true)
 end
 
 local function betterReadfile(path)

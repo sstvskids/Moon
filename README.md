@@ -1,3 +1,6 @@
+> [!WARNING]
+> I do not own Moon, I simply made it work for people who want to use the shit version.
+
 # Moon Script, the #1 roblox script utility.
 
 We offer:
@@ -7,4 +10,4 @@ We offer:
 
 The script is FREE, but there will eventually be a premium option for BETTER quality, BETTER modules, and MORE games supported!
 
-Join today @ our [discord](https://discord.gg/CPaUDfZT6C)
+Join today @ damcs [discord](https://discord.gg/CPaUDfZT6C)

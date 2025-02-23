@@ -24,7 +24,7 @@ Speed = GuiLibrary.Windows.Movement.CreateModuleButton({
 				if SpeedMode.Option == "Velocity" then
 					lplr.Character.PrimaryPart.Velocity = getSpeed(SpeedSlider.Value, Delta, false, SpeedMode.Option)
 				elseif SpeedMode.Option == "CFrame" then
-					lplr.Character.PrimaryPart.CFrame += getSpeed(SpeedSlider.Value, Delta, true, SpeedMode.Option))
+					lplr.Character.PrimaryPart.CFrame += getSpeed(SpeedSlider.Value, Delta, true, SpeedMode.Option)
 				end
 			end)
 		else

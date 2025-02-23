@@ -211,16 +211,16 @@ ProfileBack.Parent = HudFrame
 local TargetHudEvent
 
 function TargetHud.SetTarget(player)
-    task.spawn(function()
-        if player and player.Character and player.Character:FindFirstChild("Humanoid") then
-            HudFrame.Visible = true
-            NameLabel.Text = player.Name
-            ProfilePic.Image = "http://www.roblox.com/Thumbs/Avatar.ashx?x=100&y=100&Format=Png&username=" .. player.Name
+	task.spawn(function()
+		if player and player.Character and player.Character:FindFirstChild("Humanoid") then
+			HudFrame.Visible = true
+			NameLabel.Text = player.Name
+			ProfilePic.Image = "http://www.roblox.com/Thumbs/Avatar.ashx?x=100&y=100&Format=Png&username=" .. player.Name
 
-            local humanoid = player.Character:FindFirstChild("Humanoid")
-            if humanoid then
+			local humanoid = player.Character:FindFirstChild("Humanoid")
+			if humanoid then
 				local healthPercentage = humanoid.Health / humanoid.MaxHealth
-                TargetHudEvent = humanoid:GetPropertyChangedSignal("Health"):Connect(function()
+				TargetHudEvent = humanoid:GetPropertyChangedSignal("Health"):Connect(function()
 					task.spawn(function()
 						healthPercentage = humanoid.Health / humanoid.MaxHealth
 						TweenService:Create(HealthBar, TweenInfo.new(0.3), {
@@ -230,10 +230,10 @@ function TargetHud.SetTarget(player)
 						HealthBar.BackgroundColor3 = GuiLibrary.Theme
 					end)
 				end)
-                HealthBar.Size = UDim2.fromScale(healthPercentage, 1)
-            end
-        end
-    end)
+				HealthBar.Size = UDim2.fromScale(healthPercentage, 1)
+			end
+		end
+	end)
 end
 
 function TargetHud.Clear()
@@ -401,37 +401,48 @@ function GuiLibrary:CreateNotification(text, duration)
 	end)
 end
 
+local WindowPositionConfig = {}
+
+if isfile("Moon/GuiLocations.json") then
+	WindowPositionConfig = HttpService:JSONDecode(readfile("Moon/GuiLocations.json"))
+end
+
 local WindowCount = 0
 function GuiLibrary:CreateWindow(name)
+	
+	if WindowPositionConfig[name] == nil then
+		WindowPositionConfig[name] = {x = nil, y = nil}
+	end
 
 	local Top = Instance.new("TextLabel", ScreenGui)
 	Top.Size = UDim2.fromScale(0.1, 0.04)
 	Top.Position = UDim2.fromScale(0.15 + (0.12 * WindowCount), 0.15)
 	Top.BorderSizePixel = 0
-	Top.BackgroundColor3 = Color3.fromRGB(40,40,40)
+	Top.BackgroundColor3 = GuiLibrary.Theme
 	Top.Text = "  "..name
 	Top.TextColor3 = Color3.fromRGB(255,255,255)
 	Top.TextSize = 12
 	Top.TextXAlignment = Enum.TextXAlignment.Left
-
-	local TopLine = Instance.new("Frame", Top)
-	TopLine.Size = UDim2.fromScale(1,0.05)
-	TopLine.Position = UDim2.fromScale(0,0.95)
-	TopLine.BorderSizePixel = 0
-	TopLine.BackgroundColor3 = GuiLibrary.Theme
-
-	local TopLineSoftGlow = Instance.new("ImageLabel", Top)
-	TopLineSoftGlow.BackgroundTransparency = 1
-	TopLineSoftGlow.Image = Assets.Glow
-	TopLineSoftGlow.Size = UDim2.fromScale(1.56,0.5)
-	TopLineSoftGlow.ZIndex = 3
-	TopLineSoftGlow.ImageColor3 = GuiLibrary.Theme
-	TopLineSoftGlow.ImageTransparency = 0.8
-	TopLineSoftGlow.Position = UDim2.fromScale(-0.3,0.725)
+	Top.BackgroundTransparency = 0.5
+	Top.Draggable = true
+	Top.Active = true
+	Top.DragStopped:Connect(function(x, y)
+		WindowPositionConfig[name].x = x
+		WindowPositionConfig[name].y = y
+		task.delay(0.1,function()
+			if isfile("Moon/GuiLocations.json") then
+				delfile("Moon/GuiLocations.json")
+			end
+			writefile("Moon/GuiLocations.json", HttpService:JSONEncode(WindowPositionConfig))
+		end)
+	end)
+	
+	if WindowPositionConfig[name].x ~= nil then
+		Top.Position = UDim2.fromOffset(WindowPositionConfig[name].x,WindowPositionConfig[name].y)
+	end
 
 	GuiLibrary.ThemeUpdate.Event:Connect(function(newTheme)
-		TopLine.BackgroundColor3 = newTheme
-		TopLineSoftGlow.ImageColor3 = newTheme
+		Top.BackgroundColor3 = newTheme
 	end)
 
 	local ModuleFrame = Instance.new("ScrollingFrame", Top)
@@ -460,11 +471,12 @@ function GuiLibrary:CreateWindow(name)
 			Button.TextXAlignment = Enum.TextXAlignment.Left
 			Button.LayoutOrder = #ModuleFrame:GetChildren()
 			Button.BorderSizePixel = 0
+			Button.BackgroundTransparency = 0.5
 
 			local SettingsLogo = Instance.new("ImageLabel", Button)
 			SettingsLogo.BackgroundTransparency = 1
 			SettingsLogo.Image = Assets.Settings
-			SettingsLogo.Size = UDim2.fromScale(0.16,0.8)
+			SettingsLogo.Size = UDim2.new(0.16, 0, 0,25)
 			SettingsLogo.Position = UDim2.fromScale(0.84,0.12)
 			SettingsLogo.ZIndex = 4
 
@@ -478,12 +490,13 @@ function GuiLibrary:CreateWindow(name)
 			local KeybindButton = Instance.new("TextButton", SettingsFrame)
 			KeybindButton.Size = UDim2.new(1, 0, 0, 30)
 			KeybindButton.BorderSizePixel = 0
-			KeybindButton.BackgroundColor3 = Color3.fromRGB(45,45,45)
+			KeybindButton.BackgroundColor3 = Color3.fromRGB(35,35,35)
 			KeybindButton.TextColor3 = Color3.fromRGB(255,255,255)
 			KeybindButton.TextSize = 10
 			KeybindButton.Text = "  Keybind: NONE"
 			KeybindButton.TextXAlignment = Enum.TextXAlignment.Left
 			KeybindButton.LayoutOrder = 1
+			KeybindButton.BackgroundTransparency = 0.5
 
 			local KeybindConnection
 			local Keybind = Enum.KeyCode.Unknown
@@ -511,7 +524,7 @@ function GuiLibrary:CreateWindow(name)
 			KeybindSideLine.BorderSizePixel = 0
 			KeybindSideLine.BackgroundColor3 = GuiLibrary.Theme
 
-			
+
 			GuiLibrary.ThemeUpdate.Event:Connect(function(newTheme)
 				KeybindSideLine.BackgroundColor3 = darkenColor(newTheme, 0.6)
 			end)
@@ -538,6 +551,7 @@ function GuiLibrary:CreateWindow(name)
 					DuplicateButton.Parent = Button
 					DuplicateButton.Size = UDim2.fromScale(0,1)
 					DuplicateButton.BackgroundColor3 = GuiLibrary.Theme
+					DuplicateButton.BackgroundTransparency = 0.5
 					TweenService:Create(DuplicateButton, TweenInfo.new(0.3), {
 						Size = UDim2.fromScale(1,1)
 					}):Play()
@@ -596,11 +610,12 @@ function GuiLibrary:CreateWindow(name)
 				local Toggle = Instance.new("TextButton", SettingsFrame)
 				Toggle.Size = UDim2.new(1, 0, 0, 30)
 				Toggle.BorderSizePixel = 0
-				Toggle.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+				Toggle.BackgroundColor3 = Color3.fromRGB(35,35,35)
 				Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
 				Toggle.TextSize = 10
 				Toggle.Text = "  " .. tab2.Name
 				Toggle.TextXAlignment = Enum.TextXAlignment.Left
+				Toggle.BackgroundTransparency = 0.5
 
 				local SettingsSideLine = Instance.new("Frame", Toggle)
 				SettingsSideLine.Size = UDim2.fromScale(0.015, 1)
@@ -627,12 +642,14 @@ function GuiLibrary:CreateWindow(name)
 
 					if ToggleFunctions.Enabled then
 						TweenService:Create(SettingsSideLine, TweenInfo.new(0.3), {
-							Size = UDim2.fromScale(1, 1)
+							Size = UDim2.fromScale(1, 1),
+							BackgroundTransparency = 0.5
 						}):Play()
 						FakeToggleText.Visible = true
 					else
 						TweenService:Create(SettingsSideLine, TweenInfo.new(0.3), {
-							Size = UDim2.fromScale(0.015, 1)
+							Size = UDim2.fromScale(0.015, 1),
+							BackgroundTransparency = 0
 						}):Play()
 						task.delay(0.3, function()
 							FakeToggleText.Visible = false
@@ -669,33 +686,34 @@ function GuiLibrary:CreateWindow(name)
 
 			function ButtonFunctions.CreatePicker(tab2)
 				local pickerKey = tab.Name .. "_" .. tab2.Name
-			
+
 				if not Config.Pickers[pickerKey] or not Config.Pickers[pickerKey].Option then
 					Config.Pickers[pickerKey] = { Option = tab2.Options[1] }
 				end
-			
+
 				local Picker = Instance.new("TextButton", SettingsFrame)
 				Picker.Size = UDim2.new(1, 0, 0, 30)
 				Picker.BorderSizePixel = 0
-				Picker.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+				Picker.BackgroundColor3 = Color3.fromRGB(35,35,35)
 				Picker.TextColor3 = Color3.fromRGB(255, 255, 255)
 				Picker.TextSize = 10
 				Picker.TextXAlignment = Enum.TextXAlignment.Left
-			
+				Picker.BackgroundTransparency = 0.5
+
 				local SettingsSideLine = Instance.new("Frame", Picker)
 				SettingsSideLine.Size = UDim2.fromScale(0.015, 1)
 				SettingsSideLine.Position = UDim2.fromScale(0, 0)
 				SettingsSideLine.BorderSizePixel = 0
 				SettingsSideLine.BackgroundColor3 = GuiLibrary.Theme
-			
+
 				local PickerFunctions = { Option = Config.Pickers[pickerKey].Option }
-			
+
 				local function updatePickerText()
 					Picker.Text = "  " .. tab2.Name .. ": " .. (PickerFunctions.Option or "N/A")
 				end
-			
+
 				local index = table.find(tab2.Options, PickerFunctions.Option) or 1
-			
+
 				function PickerFunctions:Select(selection)
 					if selection == nil then
 						index = index % #tab2.Options + 1
@@ -707,17 +725,17 @@ function GuiLibrary:CreateWindow(name)
 							end
 						end
 					end
-			
+
 					PickerFunctions.Option = tab2.Options[index] or tab2.Options[1]
 					Config.Pickers[pickerKey].Option = PickerFunctions.Option
 					updatePickerText()
 					task.delay(0.1, saveconfig)
-			
+
 					if tab2.Function then
 						tab2.Function(PickerFunctions.Option)
 					end
 				end
-			
+
 				Picker.MouseButton1Down:Connect(function()
 					PickerFunctions:Select()
 				end)
@@ -725,12 +743,12 @@ function GuiLibrary:CreateWindow(name)
 				GuiLibrary.ThemeUpdate.Event:Connect(function(newTheme)
 					SettingsSideLine.BackgroundColor3 = darkenColor(newTheme, 0.6)
 				end)
-			
+
 				updatePickerText()
 				return PickerFunctions
 			end
-			
-			
+
+
 
 			function ButtonFunctions.CreateSlider(tab2)
 
@@ -740,8 +758,9 @@ function GuiLibrary:CreateWindow(name)
 
 				local SliderFrame = Instance.new("Frame", SettingsFrame)
 				SliderFrame.Size = UDim2.new(1, 0, 0, 40)
-				SliderFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+				SliderFrame.BackgroundColor3 = Color3.fromRGB(35,35,35)
 				SliderFrame.BorderSizePixel = 0
+				SliderFrame.BackgroundTransparency = 0.5
 
 				local SettingsSideLine = Instance.new("Frame", SliderFrame)
 				SettingsSideLine.Size = UDim2.fromScale(0.015,1)
@@ -777,6 +796,7 @@ function GuiLibrary:CreateWindow(name)
 				SliderButton.AutoButtonColor = false
 				SliderButton.Text = ""
 				SliderButton.BorderSizePixel = 0
+				SliderButton.ZIndex = 9
 				local SliderButtonRound = Instance.new("UICorner", SliderButton)
 				SliderButtonRound.CornerRadius = UDim.new(1,0)
 

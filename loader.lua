@@ -1,7 +1,12 @@
 local LaunchId = math.random()
 
-if getgenv().LoadedFromTeleport == nil and not shared.MoonDeveloper then
-	--queue_on_teleport("getgenv().LoadedFromTeleport = true; loadstring(game:HttpGet('https://raw.githubusercontent.com/ImDamc/Moon/refs/heads/main/loader.lua', true))()")
+getgenv().loadTeleport = function()
+    task.wait(1.5)
+    return queueonteleport("getgenv().LoadedFromTeleport = true; loadstring(game:HttpGet('https://raw.githubusercontent.com/ImDamc/Moon/refs/heads/main/loader.lua', true))()")
+end
+
+if getgenv().LoadedFromTeleport == nil and not shared.MoonDeveloper and queueonteleport then
+    loadTeleport()
 end
 
 if shared.MoonDeveloper then
